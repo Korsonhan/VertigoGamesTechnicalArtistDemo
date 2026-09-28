@@ -1,2 +1,59 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Unity serialized assets (Force Text). Keep LF in the working tree so files
+# re-saved by Unity never show up as line-ending churn. text=auto still lets
+# Git skip the rare binary .asset (e.g. baked lighting data).
+*.unity              text=auto eol=lf
+*.prefab             text=auto eol=lf
+*.asset              text=auto eol=lf
+*.meta               text=auto eol=lf
+*.mat                text=auto eol=lf
+*.anim               text=auto eol=lf
+*.controller         text=auto eol=lf
+*.overrideController text=auto eol=lf
+*.mask               text=auto eol=lf
+*.playable           text=auto eol=lf
+*.physicMaterial     text=auto eol=lf
+*.spriteatlas        text=auto eol=lf
+*.spriteatlasv2      text=auto eol=lf
+*.shadergraph        text=auto eol=lf
+*.shadersubgraph     text=auto eol=lf
+*.vfx                text=auto eol=lf
+*.inputactions       text=auto eol=lf
+*.preset             text=auto eol=lf
+*.lighting           text=auto eol=lf
+*.renderTexture      text=auto eol=lf
+*.fontsettings       text=auto eol=lf
+*.guiskin            text=auto eol=lf
+
+# Code and shaders
+*.cs      text diff=csharp
+*.shader  text
+*.hlsl    text
+*.cginc   text
+*.compute text
+*.asmdef  text
+*.json    text
+*.md      text
+
+# Binary assets
+*.png          binary
+*.jpg          binary
+*.jpeg         binary
+*.tga          binary
+*.psd          binary
+*.exr          binary
+*.hdr          binary
+*.fbx          binary
+*.obj          binary
+*.blend        binary
+*.ttf          binary
+*.otf          binary
+*.wav          binary
+*.mp3          binary
+*.ogg          binary
+*.mp4          binary
+*.mov          binary
+*.dll          binary
+*.unitypackage binary
