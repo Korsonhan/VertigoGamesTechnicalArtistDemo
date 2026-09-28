@@ -22,6 +22,7 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 - Tap any other reward to see what it is and what unlocks it.
 - Press **GET** on the season card to buy the premium pass: the reached premium rewards unlock in a wave from left to right.
 - Press the green **💎 20** button on the progress bar to buy the next level.
+- Press **P** to play a scripted walkthrough of all of the above (it taps through the real pointer events and shows a ring where each tap lands).
 - Press **R** to restart the scene.
 
 ### Reward states
@@ -52,6 +53,7 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
 - Press **Play** in the WeaponVFX scene. The wind flows continuously, and the rifle sways slowly while nobody is touching it.
 - Drag to rotate the rifle. Press **1** for the side view and **2** for the three-quarter view of the references.
+- Press **P** for a scripted showcase: side view, three-quarter view, a slow full turn and back.
 
 ### How it is built
 
@@ -94,7 +96,16 @@ Import settings are applied automatically by `Shared/Editor/AssetImportRules.cs`
 
 ## Videos
 
-_Links to the captures will be added here. They are recorded inside the project with Unity Recorder, without any post-processing added outside the project._
+_Links to the captures will be added here._
+
+Both videos are rendered inside the project at a constant 30 fps, with no post-processing added outside it: the Battle Pass at 2340 × 1080 (19.5:9 phone) and the weapon at 1920 × 1080. Each one plays the scene's scripted walkthrough (**P**). There are two ways to record them again:
+
+- **In the editor:** **Tools → Vertigo Demo → Record Videos** opens each scene, enters Play mode and records the Game view with Unity Recorder into `Recordings/`.
+- **Headless:** the `Capture` PlayMode tests render every frame offscreen at a fixed 30 fps game time and encode it with Unity's MediaEncoder into `Recordings/`. The screen-space title overlay is composited over the post-processed frame. They are skipped unless the editor is started with `-recordVideos`:
+
+  ```
+  Unity -batchmode -projectPath <project> -runTests -testPlatform PlayMode -testCategory Capture -recordVideos
+  ```
 
 ## Asset ownership
 
