@@ -5,7 +5,7 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 | Task | Scene | Status |
 |---|---|---|
 | 1. Battle Pass Road and item state FX | `Assets/_Project/BattlePass/Scenes/BattlePass.unity` | Done |
-| 2. Weapon VFX (MCX – Top Scorer) | `Assets/_Project/WeaponVFX/Scenes/WeaponVFX.unity` | In progress |
+| 2. Weapon VFX (MCX – Top Scorer) | `Assets/_Project/WeaponVFX/Scenes/WeaponVFX.unity` | Done |
 
 ## Opening the project
 
@@ -42,21 +42,50 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 - **Overdraw.** The background is the camera clear colour plus a single tiled pattern layer. Invisible hit areas use a raycast-only graphic that submits no geometry.
 - **Particles.** Claim and unlock bursts are pooled, so claiming never instantiates anything. They use a minimal additive URP shader and existing small textures. The flying currency icons live on a nested canvas, so they don't rebuild the road's batches while they move.
 - **Textures.** UI sprites have no mipmaps. The UI atlas uses ASTC 4×4 and the reward atlas ASTC 6×6. Soft glows use ASTC 8×8 capped at 512 px.
-- **Layout.** 1920 × 1080 reference resolution matched on height, so wider phones see more of the road. Interactive content sits inside the device safe area.
+- **Layout.** 1920 × 1080 reference resolution matched on height, so wider phones see more of the road. Interactive content sits inside the device safe area. The mobile URP asset renders at full resolution: the canvas is drawn by the camera, so a lower render scale would blur the UI.
 - **Tests.** `BattlePassProgress` holds the rules in plain C# with EditMode tests. A PlayMode test plays the whole flow, checks states and wallet, and logs the idle rendering cost. Run them from **Window → General → Test Runner**.
 - **Tooling.** `BattlePass/Editor/BattlePassBuilder.cs` (**Tools → Vertigo Demo → Rebuild Battle Pass**) regenerates the Battle Pass materials, data, atlases, prefabs and scene hierarchy from code.
 
 ## Task 2 – Weapon VFX
 
-_In progress._
+### What to test
+
+- Press **Play** in the WeaponVFX scene. The wind flows continuously, and the rifle sways slowly while nobody is touching it.
+- Drag to rotate the rifle. Press **1** for the side view and **2** for the three-quarter view of the references.
+
+### How it is built
+
+- **Wind ribbons (shader).** `WindRibbonMesh` generates eight ribbons that spiral around the barrel axis, as a single mesh: one draw call, about 1,200 vertices, editable in the Inspector. `WindRibbon.shader` (hand-written HLSL, additive) does the following:
+  - scrolls the provided streak sprite along each ribbon in two layers at different speeds;
+  - shapes it into a faint translucent band with bright rims;
+  - fades it in at the muzzle and out towards the stock;
+  - flutters the ribbon with a travelling wave in the vertex shader.
+
+  Seed, speed and brightness for each ribbon travel in vertex colours, so one material covers all of them.
+- **Weapon shader.** The rifle comes with a diffuse map only, so `WeaponLegendary.shader` derives the other layers:
+  - warm, saturated texels are read as polished gold, with tinted, tighter specular and a fake sky reflection;
+  - the pale ball inside the football cage glows and pulses, masked by an object-space sphere that skips the gold bars;
+  - a sheen band sweeps the gold from muzzle to stock, following the wind.
+
+  Lighting is the main light plus per-vertex SH, with no shadows.
+- **Secondary effects (Particle System).**
+  - Four-point glints: each is a camera-facing cross mesh of two quads, so no star texture is needed.
+  - Drifting dust with light turbulence.
+  - Motion streaks that orbit the barrel on their way back (orbital velocity on stretched billboards).
+  - A soft halo over the core.
+
+  All of them simulate in local space, are capped at 4–48 particles each and share one additive URP shader.
+- **Scene.** The backdrop is a full-screen radial gradient drawn by a clip-space quad, with no texture and dithered against banding. Post-processing runs inside the project: bloom at quarter resolution with 5 iterations, neutral tonemapping and a vignette.
+- **Cost.** 28 draw calls (most of them the bloom chain), about 6,100 triangles and about 45 live particles.
+- **Tooling.** `WeaponVFX/Editor/WeaponVfxBuilder.cs` (**Tools → Vertigo Demo → Rebuild Weapon VFX**) regenerates the materials, post-processing profile, weapon prefab and scene. A PlayMode test checks that every effect is alive and logs the rendering cost.
 
 ## Project layout
 
 ```
 Assets/_Project/
   BattlePass/   Task 1: sprites, atlases, data, prefabs, shaders, scripts, tests and the scene
-  WeaponVFX/    Task 2: weapon model, texture, material and the VFX scene
-  Shared/       Import rules and shaders used by both tasks
+  WeaponVFX/    Task 2: model, texture, shaders, materials, meshes, post-processing, prefab, scripts, tests and the scene
+  Shared/       Import rules and the additive particle shader used by both tasks
 Assets/Settings/        URP pipeline assets
 Assets/TextMesh Pro/    TextMesh Pro essential resources
 ```
