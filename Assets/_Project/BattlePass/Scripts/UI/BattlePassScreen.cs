@@ -38,6 +38,7 @@ namespace VertigoDemo.BattlePass.UI
         [SerializeField] SeasonPanelView seasonPanel;
         [SerializeField] RewardTooltip tooltip;
         [SerializeField] RewardFxPool fx;
+        [SerializeField] CurrencyFlyFx currencyFly;
 
         [Header("Placeholder player state")]
         [SerializeField, Min(0)] int startLevel = 3;
@@ -152,7 +153,7 @@ namespace VertigoDemo.BattlePass.UI
                 if (progress.TryClaim(card.Level, card.Track))
                 {
                     fx.PlayClaim(card.Body.position, Color.Lerp(card.Accent, Color.white, 0.35f));
-                    Grant(card.Reward);
+                    Grant(card);
                 }
                 return;
             }
@@ -250,12 +251,23 @@ namespace VertigoDemo.BattlePass.UI
             _ => "Tap to claim",
         };
 
-        void Grant(RewardDefinition reward)
+        // Currency rewards fly into the wallet; the readout counts up as the first icon lands.
+        void Grant(RewardCardView card)
         {
-            if (reward.kind == RewardKind.Coins)
-                topBar.Coins.Add(reward.amount);
-            else if (reward.kind == RewardKind.Gems)
-                topBar.Gems.Add(reward.amount);
+            var reward = card.Reward;
+            var counter = reward.kind switch
+            {
+                RewardKind.Coins => topBar.Coins,
+                RewardKind.Gems => topBar.Gems,
+                _ => null,
+            };
+            if (counter == null)
+                return;
+
+            var sprite = counter.Icon.GetComponent<Image>().sprite;
+            int icons = reward.kind == RewardKind.Coins ? 8 : 6;
+            float arrival = currencyFly.Play(sprite, card.Body.position, counter.Icon, icons);
+            counter.Add(reward.amount, arrival);
         }
 
         void BeginSequence(float delay, float stagger)

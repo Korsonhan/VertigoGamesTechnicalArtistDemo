@@ -38,7 +38,7 @@ namespace VertigoDemo.BattlePass.Tests
             // Render at a phone aspect whatever the batch-mode screen size is: a world-space canvas
             // framed by the orthographic UI camera, drawn into an offscreen target.
             camera = Camera.main;
-            var canvas = Object.FindFirstObjectByType<Canvas>();
+            var canvas = Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None).First(c => c.isRootCanvas);
             canvas.renderMode = RenderMode.WorldSpace;
             var canvasRect = (RectTransform)canvas.transform;
             canvasRect.sizeDelta = new Vector2(Width, Height);
@@ -110,6 +110,14 @@ namespace VertigoDemo.BattlePass.Tests
             Capture("08_premium_claimable");
             for (int level = 1; level <= 3; level++)
                 Assert.AreEqual(RewardState.Claimable, Card(level, RewardTrack.Premium).State, $"Premium level {level}");
+
+            // Claim a coin reward: coins fly into the wallet.
+            int coins = Counter("Coins").Value;
+            Click(Card(3, RewardTrack.Premium).gameObject);
+            yield return Wait(0.45f);
+            Capture("08b_coins_flying");
+            yield return Wait(0.8f);
+            Assert.AreEqual(coins + 5000, Counter("Coins").Value);
 
             // Buy the next level with gems: the new rewards unlock after the fill arrives.
             gems = Counter("Gems").Value;

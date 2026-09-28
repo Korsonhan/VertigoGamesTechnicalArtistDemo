@@ -493,20 +493,30 @@ namespace VertigoDemo.BattlePass.EditorTools
             pattern.type = Image.Type.Tiled;
             pattern.pixelsPerUnitMultiplier = 0.55f;
 
-            var road = BuildRoad(root, out var track, out var levelContainer, out var skipButton, out var skipCost, out var emptyRoadClicks);
-            var seasonPanel = BuildSeasonPanel(root);
-            var topBar = BuildTopBar(root);
-            var tooltip = BuildTooltip(root);
+            // Interactive content stays inside the device safe area; background and FX span the whole screen.
+            var safeArea = Stretch(NewUI("SafeArea", root));
+            safeArea.gameObject.AddComponent<SafeAreaFitter>();
+            var road = BuildRoad(safeArea, out var track, out var levelContainer, out var skipButton, out var skipCost, out var emptyRoadClicks);
+            var seasonPanel = BuildSeasonPanel(safeArea);
+            var topBar = BuildTopBar(safeArea);
+            var tooltip = BuildTooltip(safeArea);
 
+            // Moving FX get a nested canvas, so animating them never rebuilds the road's batches.
             var fxLayer = Stretch(NewUI("FxLayer", root));
+            var fxCanvas = fxLayer.gameObject.AddComponent<Canvas>();
+            fxCanvas.additionalShaderChannels = AdditionalCanvasShaderChannels.TexCoord1 | AdditionalCanvasShaderChannels.TexCoord2;
             var fx = fxLayer.gameObject.AddComponent<RewardFxPool>();
             Wire(fx, ("claimBurst", claimBurst), ("unlockBurst", unlockBurst));
+            var flyTemplate = AddImage(Place(NewUI("FlyIconTemplate", fxLayer), Center, Center, Vector2.zero, new Vector2(72f, 72f)), "ui_icon_currency_soft_0", preserveAspect: true);
+            flyTemplate.gameObject.SetActive(false);
+            var currencyFly = fxLayer.gameObject.AddComponent<CurrencyFlyFx>();
+            Wire(currencyFly, ("iconTemplate", flyTemplate));
 
             Wire(screen,
                 ("season", season), ("palette", palette), ("road", road), ("levelContainer", levelContainer),
                 ("levelPrefab", levelPrefab), ("track", track), ("skipButton", skipButton), ("skipCostLabel", skipCost),
                 ("emptyRoadClicks", emptyRoadClicks), ("topBar", topBar), ("seasonPanel", seasonPanel),
-                ("tooltip", tooltip), ("fx", fx));
+                ("tooltip", tooltip), ("fx", fx), ("currencyFly", currencyFly));
 
             return SavePrefab<BattlePassScreen>(root, ScreenPrefabPath);
         }
@@ -749,7 +759,7 @@ namespace VertigoDemo.BattlePass.EditorTools
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             // Opening a scene unloads unreferenced assets, so load the prefab only after it.
             var screenPrefab = AssetDatabase.LoadAssetAtPath<BattlePassScreen>(ScreenPrefabPath);
-            var canvas = Object.FindFirstObjectByType<Canvas>();
+            var canvas = RootCanvas();
             canvas.additionalShaderChannels |= AdditionalCanvasShaderChannels.TexCoord1 | AdditionalCanvasShaderChannels.TexCoord2;
 
             for (int i = canvas.transform.childCount - 1; i >= 0; i--)
@@ -770,7 +780,7 @@ namespace VertigoDemo.BattlePass.EditorTools
 
             EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             var camera = Object.FindFirstObjectByType<Camera>();
-            var canvas = Object.FindFirstObjectByType<Canvas>();
+            var canvas = RootCanvas();
             var screen = Object.FindFirstObjectByType<BattlePassScreen>();
 
             // Offscreen capture: a world-space canvas framed by the orthographic UI camera.
@@ -814,6 +824,10 @@ namespace VertigoDemo.BattlePass.EditorTools
         }
 
         // ------------------------------------------------------------------ helpers
+
+        // The screen nests its own canvases (FX layer), so always look for the scene's root canvas.
+        static Canvas RootCanvas() =>
+            Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None).First(canvas => canvas.isRootCanvas);
 
         static RectTransform NewUI(string name, Transform parent)
         {
