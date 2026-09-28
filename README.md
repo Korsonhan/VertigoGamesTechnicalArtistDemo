@@ -94,19 +94,6 @@ Assets/TextMesh Pro/    TextMesh Pro essential resources
 
 Import settings are applied automatically by `Shared/Editor/AssetImportRules.cs` the first time an asset is imported: UI sprites get no mipmaps, 9-slice borders and ASTC compression on mobile (lower bit rate and max 512 px for soft glows); the weapon FBX skips cameras, lights, animation, materials and tangents.
 
-## Videos
-
-_Links to the captures will be added here._
-
-Both videos are rendered inside the project at a constant 30 fps, with no post-processing added outside it: the Battle Pass at 2340 × 1080 (19.5:9 phone) and the weapon at 1920 × 1080. Each one plays the scene's scripted walkthrough (**P**). There are two ways to record them again:
-
-- **In the editor:** **Tools → Vertigo Demo → Record Videos** opens each scene, enters Play mode and records the Game view with Unity Recorder into `Recordings/`.
-- **Headless:** the `Capture` PlayMode tests render every frame offscreen at a fixed 30 fps game time and encode it with Unity's MediaEncoder into `Recordings/`. The screen-space title overlay is composited over the post-processed frame. They are skipped unless the editor is started with `-recordVideos`:
-
-  ```
-  Unity -batchmode -projectPath <project> -runTests -testPlatform PlayMode -testCategory Capture -recordVideos
-  ```
-
 ## Asset ownership
 
 The UI sprites, weapon model and textures were provided by Vertigo Games for this demo and remain their property. They are included only so the project opens and runs as submitted.
