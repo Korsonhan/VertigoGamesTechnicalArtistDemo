@@ -17,6 +17,8 @@ namespace VertigoDemo.BattlePass.UI
 
         public event Action GetPressed;
 
+        public Button GetButton => getButton;
+
         Sprite offerButtonSprite;
 
         void Awake() => getButton.onClick.AddListener(() => GetPressed?.Invoke());

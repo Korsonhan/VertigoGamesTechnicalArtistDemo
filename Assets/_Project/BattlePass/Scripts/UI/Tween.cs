@@ -6,13 +6,14 @@ namespace VertigoDemo.UI
 {
     /// <summary>
     /// Minimal coroutine tweens for one-shot UI transitions, so the project needs no third-party
-    /// tweening package. Uses unscaled time so the UI keeps animating while gameplay is paused.
+    /// tweening package. Runs on game time, so fixed-rate captures (Unity Recorder) stay in sync
+    /// with the particles and shaders.
     /// </summary>
     public static class Tween
     {
         public static IEnumerator Wait(float seconds)
         {
-            for (float t = 0f; t < seconds; t += Time.unscaledDeltaTime)
+            for (float t = 0f; t < seconds; t += Time.deltaTime)
                 yield return null;
         }
 
@@ -20,7 +21,7 @@ namespace VertigoDemo.UI
         public static IEnumerator Run(float duration, Action<float> step, Func<float, float> ease = null)
         {
             ease ??= Ease.Linear;
-            for (float t = 0f; t < duration; t += Time.unscaledDeltaTime)
+            for (float t = 0f; t < duration; t += Time.deltaTime)
             {
                 step(ease(t / duration));
                 yield return null;

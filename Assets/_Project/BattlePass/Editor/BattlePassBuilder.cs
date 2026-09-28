@@ -512,6 +512,12 @@ namespace VertigoDemo.BattlePass.EditorTools
             var currencyFly = fxLayer.gameObject.AddComponent<CurrencyFlyFx>();
             Wire(currencyFly, ("iconTemplate", flyTemplate));
 
+            // Scripted walkthrough for recordings (P), with a ring showing where each tap lands.
+            var touchRing = AddImage(Place(NewUI("TouchRing", fxLayer), Center, Center, Vector2.zero, new Vector2(120f, 120f)), "ui_item_circle_empty_8px", new Color(1f, 1f, 1f, 0.9f));
+            touchRing.gameObject.SetActive(false);
+            var autoplay = root.gameObject.AddComponent<BattlePassAutoplay>();
+            Wire(autoplay, ("screen", screen), ("touchRing", touchRing));
+
             Wire(screen,
                 ("season", season), ("palette", palette), ("road", road), ("levelContainer", levelContainer),
                 ("levelPrefab", levelPrefab), ("track", track), ("skipButton", skipButton), ("skipCostLabel", skipCost),

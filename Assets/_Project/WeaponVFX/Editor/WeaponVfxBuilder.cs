@@ -453,7 +453,10 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             volume.sharedProfile = profile;
 
             var turntable = new GameObject("Turntable");
-            turntable.AddComponent<InspectTurntable>();
+            var inspect = turntable.AddComponent<InspectTurntable>();
+            var showcase = new SerializedObject(turntable.AddComponent<InspectShowcase>());
+            showcase.FindProperty("turntable").objectReferenceValue = inspect;
+            showcase.ApplyModifiedPropertiesWithoutUndo();
             var weapon = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(WeaponPrefabPath), scene);
             weapon.transform.SetParent(turntable.transform, false);
 

@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -61,6 +62,21 @@ namespace VertigoDemo.WeaponVFX
         {
             target = views[Mathf.Clamp(index, 0, views.Length - 1)];
             idleTime = 0f;
+        }
+
+        /// <summary>Turns the rifle a full circle at a steady speed, then keeps its current view.</summary>
+        public IEnumerator Spin(float degrees, float duration)
+        {
+            float start = target.x;
+            for (float t = 0f; t < duration; t += Time.deltaTime)
+            {
+                target.x = start - degrees * Mathf.SmoothStep(0f, 1f, t / duration);
+                idleTime = 0f;
+                yield return null;
+            }
+            // Unwind the extra turn on both angles so the next view does not spin back.
+            target.x = start;
+            current.x += degrees;
         }
 
         static bool TryGetDrag(out Vector2 delta)

@@ -84,6 +84,16 @@ namespace VertigoDemo.BattlePass.UI
             ScrollToProgress(animate: false);
         }
 
+        // Handles for the scripted walkthrough (BattlePassAutoplay) and tests.
+        public RewardCardView GetCard(int level, RewardTrack rewardTrack) => levels[level - 1].Card(rewardTrack);
+        public Button SkipLevelButton => skipButton;
+        public Button PremiumButton => seasonPanel.GetButton;
+        public int CurrentLevel => progress.Level;
+
+        public void ScrollToLevel(int level) => ScrollTo(LevelX(level), animate: true);
+
+        public void ScrollToProgress() => ScrollToProgress(animate: true);
+
         void Build()
         {
             if (built)
@@ -279,11 +289,14 @@ namespace VertigoDemo.BattlePass.UI
 
         void EndSequence() => BeginSequence(0f, 0f);
 
-        void ScrollToProgress(bool animate)
+        void ScrollToProgress(bool animate) => ScrollTo(ProgressX(), animate);
+
+        // Scrolls so that content position x sits at the focus point of the viewport.
+        void ScrollTo(float x, bool animate)
         {
             float viewportWidth = road.viewport.rect.width;
             float maxOffset = Mathf.Max(0f, road.content.rect.width - viewportWidth);
-            float target = Mathf.Clamp(ProgressX() - viewportWidth * focusPoint, 0f, maxOffset);
+            float target = Mathf.Clamp(x - viewportWidth * focusPoint, 0f, maxOffset);
 
             if (scrollRoutine != null)
                 StopCoroutine(scrollRoutine);
