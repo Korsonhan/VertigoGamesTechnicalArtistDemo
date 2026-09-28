@@ -6,6 +6,7 @@ Shader "VertigoDemo/FX/Particle Additive"
     {
         _MainTex ("Texture", 2D) = "white" {}
         [HDR] _TintColor ("Tint", Color) = (1, 1, 1, 1)
+        [Enum(UnityEngine.Rendering.CompareFunction)] _ZTest ("Depth Test", Float) = 4
     }
 
     SubShader
@@ -21,6 +22,7 @@ Shader "VertigoDemo/FX/Particle Additive"
 
         Blend One One
         ZWrite Off
+        ZTest [_ZTest]
         Cull Off
 
         Pass
