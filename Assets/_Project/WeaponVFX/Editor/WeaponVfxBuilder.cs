@@ -51,13 +51,15 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             var ribbon = Material("M_FX_WindRibbon", "VertigoDemo/FX/Wind Ribbon");
             ribbon.SetTexture("_StreakTex", FxTexture("ui_glow_04"));
             ribbon.SetColor("_LineColor", new Color(1.9f, 1.4f, 0.5f));
-            ribbon.SetColor("_SheetColor", new Color(0.8f, 0.55f, 0.16f));
+            ribbon.SetColor("_SheetColor", new Color(0.95f, 0.66f, 0.2f));
             ribbon.SetFloat("_Intensity", 1f);
             ribbon.SetFloat("_LineWidth", 0.08f);
-            ribbon.SetFloat("_SheetOpacity", 0.55f);
+            // A clearly visible translucent band beside each line that fades out slowly, like the reference.
+            ribbon.SetFloat("_SheetOpacity", 0.9f);
+            ribbon.SetFloat("_SheetFalloff", 1.1f);
             ribbon.SetFloat("_FlowContrast", 0.5f);
             ribbon.SetFloat("_FadeIn", 0.2f);
-            ribbon.SetFloat("_FadeOut", 0.35f);
+            ribbon.SetFloat("_FadeOut", 0.45f);
 
             const string particleShader = "VertigoDemo/FX/Particle Additive";
             var sparkle = ParticleMaterial("M_FX_WeaponSparkle", particleShader, "ui_fx_glow_01", new Color(2.2f, 1.8f, 1.1f), CompareFunction.LessEqual);
@@ -207,22 +209,25 @@ namespace VertigoDemo.WeaponVFX.EditorTools
         {
             // Along the lower handguard, dipping past the foregrip, across the receiver and up to the grip.
             Ribbon(new[] { P(-0.022f, 0.028f, 0.530f), P(-0.035f, 0.008f, 0.410f), P(-0.047f, -0.030f, 0.280f), P(-0.056f, -0.055f, 0.150f), P(-0.062f, -0.058f, 0.030f), P(-0.055f, -0.040f, -0.080f), P(-0.042f, -0.015f, -0.170f) },
-                60f, 25f, 0.030f, 1f, 1f),
-            // Short, steep sweep under the foregrip.
-            Ribbon(new[] { P(-0.015f, 0.018f, 0.500f), P(-0.028f, -0.015f, 0.410f), P(-0.038f, -0.060f, 0.300f), P(-0.045f, -0.095f, 0.200f), P(-0.048f, -0.110f, 0.120f) },
-                70f, 30f, 0.028f, 0.85f, 1.15f),
+                65f, 35f, 0.044f, 1f, 1f),
+            // Short, steep sweep under the foregrip, trailing off past the drum.
+            Ribbon(new[] { P(-0.015f, 0.018f, 0.500f), P(-0.028f, -0.015f, 0.410f), P(-0.038f, -0.060f, 0.300f), P(-0.045f, -0.095f, 0.200f), P(-0.048f, -0.110f, 0.120f), P(-0.052f, -0.122f, 0.050f) },
+                72f, 40f, 0.042f, 0.85f, 1.15f),
+            // Wide, soft band under the front, mostly sheet: the translucent flow below the foregrip.
+            Ribbon(new[] { P(-0.020f, 0.005f, 0.560f), P(-0.034f, -0.040f, 0.440f), P(-0.044f, -0.085f, 0.310f), P(-0.050f, -0.118f, 0.190f), P(-0.054f, -0.135f, 0.090f) },
+                80f, 55f, 0.060f, 0.55f, 0.85f),
             // Across the face of the handguard, the scarf and the cage.
             Ribbon(new[] { P(-0.030f, 0.035f, 0.450f), P(-0.040f, 0.030f, 0.330f), P(-0.050f, 0.020f, 0.200f), P(-0.062f, 0.010f, 0.080f), P(-0.068f, 0.012f, -0.020f), P(-0.050f, 0.025f, -0.120f), P(-0.040f, 0.030f, -0.180f) },
-                55f, 20f, 0.026f, 1f, 0.9f),
+                55f, 20f, 0.034f, 1f, 0.9f),
             // Over the barrel and past the sight, slipping behind the scarf.
             Ribbon(new[] { P(-0.012f, 0.050f, 0.520f), P(-0.020f, 0.070f, 0.400f), P(-0.030f, 0.090f, 0.270f), P(-0.020f, 0.095f, 0.170f), P(0.020f, 0.100f, 0.100f) },
                 -45f, -20f, 0.022f, 0.7f, 1.2f),
             // Soft wisp coming off the muzzle.
             Ribbon(new[] { P(-0.010f, 0.035f, 0.585f), P(-0.018f, 0.028f, 0.520f), P(-0.026f, 0.018f, 0.450f), P(-0.032f, 0.005f, 0.380f) },
-                75f, 60f, 0.035f, 0.5f, 0.8f),
+                75f, 60f, 0.050f, 0.5f, 0.8f),
             // Behind the rifle.
             Ribbon(new[] { P(0.015f, 0.020f, 0.500f), P(0.035f, -0.015f, 0.360f), P(0.050f, -0.045f, 0.200f), P(0.055f, -0.060f, 0.050f), P(0.045f, -0.040f, -0.080f) },
-                60f, 30f, 0.028f, 0.6f, 1.05f),
+                60f, 30f, 0.034f, 0.6f, 1.05f),
         };
 
         static Vector3 P(float x, float y, float z) => new Vector3(x, y, z);
@@ -270,7 +275,7 @@ namespace VertigoDemo.WeaponVFX.EditorTools
 
         static void BuildSparkles(Transform parent, Material material, Bounds bounds)
         {
-            var system = NewSystem(parent, "Sparkles", material, 6);
+            var system = NewSystem(parent, "Sparkles", material, 10);
             var renderer = system.GetComponent<ParticleSystemRenderer>();
             renderer.renderMode = ParticleSystemRenderMode.Mesh;
             renderer.mesh = StarCrossMesh();
@@ -281,12 +286,12 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             main.startRotation = new ParticleSystem.MinMaxCurve(-0.3f, 0.3f);
             main.startColor = new Color(1f, 0.95f, 0.8f);
             var emission = system.emission;
-            emission.rateOverTime = 2.5f;
-            // A few small glints on and just around the rifle, a little above centre like the reference.
+            emission.rateOverTime = 4f;
+            // Small glints on and just around the middle of the rifle, a little above centre like the reference.
             var shape = system.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
             shape.position = bounds.center + new Vector3(0f, 0.02f, 0f);
-            shape.scale = bounds.size + new Vector3(0.02f, 0.02f, 0f);
+            shape.scale = new Vector3(bounds.size.x + 0.02f, bounds.size.y + 0.02f, bounds.size.z * 0.75f);
             SizeOverLifetime(system, new Keyframe(0f, 0f), new Keyframe(0.35f, 1f), new Keyframe(1f, 0f));
             var spin = system.rotationOverLifetime;
             spin.enabled = true;
@@ -296,18 +301,19 @@ namespace VertigoDemo.WeaponVFX.EditorTools
 
         static void BuildDust(Transform parent, Material material, Bounds bounds)
         {
-            var system = NewSystem(parent, "Dust", material, 14);
+            var system = NewSystem(parent, "Dust", material, 22);
             var main = system.main;
             main.startLifetime = new ParticleSystem.MinMaxCurve(1.4f, 2.4f);
             main.startSize = new ParticleSystem.MinMaxCurve(0.004f, 0.009f);
             main.startColor = new Color(1f, 0.9f, 0.6f, 0.8f);
             var emission = system.emission;
-            emission.rateOverTime = 5f;
-            // Only around the front of the rifle, where the wind is, so none collects at the grip.
+            emission.rateOverTime = 8f;
+            // Around the front and the middle of the rifle, where the wind is; the drift fades them out
+            // before they reach the grip.
             var shape = system.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
-            shape.position = bounds.center + new Vector3(0f, 0f, bounds.size.z * 0.2f);
-            shape.scale = Vector3.Scale(bounds.size, new Vector3(1.4f, 1f, 0.65f));
+            shape.position = bounds.center + new Vector3(0f, 0f, bounds.size.z * 0.12f);
+            shape.scale = Vector3.Scale(bounds.size, new Vector3(1.4f, 1f, 0.7f));
             // Drift with the wind, from muzzle to stock, with a little turbulence.
             var velocity = system.velocityOverLifetime;
             velocity.enabled = true;

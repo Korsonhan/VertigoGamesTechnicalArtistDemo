@@ -112,8 +112,8 @@ MonoBehaviour:
     - {x: -0.062, y: -0.058, z: 0.03}
     - {x: -0.055, y: -0.04, z: -0.08}
     - {x: -0.042, y: -0.015, z: -0.17}
-    roll: {x: 60, y: 25}
-    width: 0.03
+    roll: {x: 65, y: 35}
+    width: 0.044
     brightness: 1
     speed: 1
   - path:
@@ -122,10 +122,21 @@ MonoBehaviour:
     - {x: -0.038, y: -0.06, z: 0.3}
     - {x: -0.045, y: -0.095, z: 0.2}
     - {x: -0.048, y: -0.11, z: 0.12}
-    roll: {x: 70, y: 30}
-    width: 0.028
+    - {x: -0.052, y: -0.122, z: 0.05}
+    roll: {x: 72, y: 40}
+    width: 0.042
     brightness: 0.85
     speed: 1.15
+  - path:
+    - {x: -0.02, y: 0.005, z: 0.56}
+    - {x: -0.034, y: -0.04, z: 0.44}
+    - {x: -0.044, y: -0.085, z: 0.31}
+    - {x: -0.05, y: -0.118, z: 0.19}
+    - {x: -0.054, y: -0.135, z: 0.09}
+    roll: {x: 80, y: 55}
+    width: 0.06
+    brightness: 0.55
+    speed: 0.85
   - path:
     - {x: -0.03, y: 0.035, z: 0.45}
     - {x: -0.04, y: 0.03, z: 0.33}
@@ -135,7 +146,7 @@ MonoBehaviour:
     - {x: -0.05, y: 0.025, z: -0.12}
     - {x: -0.04, y: 0.03, z: -0.18}
     roll: {x: 55, y: 20}
-    width: 0.026
+    width: 0.034
     brightness: 1
     speed: 0.9
   - path:
@@ -154,7 +165,7 @@ MonoBehaviour:
     - {x: -0.026, y: 0.018, z: 0.45}
     - {x: -0.032, y: 0.005, z: 0.38}
     roll: {x: 75, y: 60}
-    width: 0.035
+    width: 0.05
     brightness: 0.5
     speed: 0.8
   - path:
@@ -164,7 +175,7 @@ MonoBehaviour:
     - {x: 0.055, y: -0.06, z: 0.05}
     - {x: 0.045, y: -0.04, z: -0.08}
     roll: {x: 60, y: 30}
-    width: 0.028
+    width: 0.034
     brightness: 0.6
     speed: 1.05
   segments: 48
@@ -772,7 +783,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 6
+    maxNumParticles: 10
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -840,7 +851,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0.0000000018626451, y: -0.0013689585, z: 0.08307925}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 0.13842851, y: 0.34819004, z: 0.91475934}
+    m_Scale: {x: 0.13842851, y: 0.34819004, z: 0.6860695}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -1038,7 +1049,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 2.5
+      scalar: 4
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -10496,7 +10507,7 @@ ParticleSystem:
         m_RotationOrder: 4
     randomizeRotationDirection: 0
     gravitySource: 0
-    maxNumParticles: 14
+    maxNumParticles: 22
     customEmitterVelocity: {x: 0, y: 0, z: 0}
     size3D: 0
     rotation3D: 0
@@ -10562,9 +10573,9 @@ ParticleSystem:
     boxThickness: {x: 0, y: 0, z: 0}
     radiusThickness: 1
     donutRadius: 0.2
-    m_Position: {x: 0.0000000018626451, y: -0.021368958, z: 0.26603112}
+    m_Position: {x: 0.0000000018626451, y: -0.021368958, z: 0.19285037}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 0.16579992, y: 0.32819003, z: 0.5945935}
+    m_Scale: {x: 0.16579992, y: 0.32819003, z: 0.6403315}
     placementMode: 0
     m_MeshMaterialIndex: 0
     m_MeshNormalOffset: 0
@@ -10762,7 +10773,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5
+      scalar: 8
       minScalar: 10
       maxCurve:
         serializedVersion: 2

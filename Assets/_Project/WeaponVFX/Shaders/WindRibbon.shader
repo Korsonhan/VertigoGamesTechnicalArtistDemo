@@ -18,6 +18,7 @@ Shader "VertigoDemo/FX/Wind Ribbon"
         _LinePosition ("Line Position", Range(0.5, 1)) = 0.86
         _LineWidth ("Line Width", Range(0.01, 0.3)) = 0.06
         _SheetOpacity ("Sheet Opacity", Range(0, 1)) = 0.35
+        _SheetFalloff ("Sheet Falloff", Range(0.5, 4)) = 1.6
 
         [Header(Flow)]
         _FlowSpeed ("Streak Speed", Float) = 0.45
@@ -81,6 +82,7 @@ Shader "VertigoDemo/FX/Wind Ribbon"
                 half _LinePosition;
                 half _LineWidth;
                 half _SheetOpacity;
+                half _SheetFalloff;
                 float _FlowSpeed;
                 float _StreakTiling;
                 float _DetailSpeed;
@@ -124,10 +126,10 @@ Shader "VertigoDemo/FX/Wind Ribbon"
                 half flow = lerp(1.0h, saturate(streak * 0.75h + detail * 0.45h), _FlowContrast);
 
                 // Across: a thin line near one edge, and a sheet that is strongest beside the line and
-                // fades out towards the other edge.
+                // fades out towards the other edge; a lower falloff carries it further across.
                 half fromLine = (across - _LinePosition) / _LineWidth;
                 half stroke = exp2(-1.4427h * fromLine * fromLine);
-                half sheet = pow(saturate(across / _LinePosition), 1.6h) * smoothstep(1.0h, _LinePosition, across);
+                half sheet = pow(saturate(across / _LinePosition), _SheetFalloff) * smoothstep(1.0h, _LinePosition, across);
 
                 // Long, soft ends.
                 half ends = smoothstep(0.0h, _FadeIn, along) * smoothstep(1.0h, 1.0h - _FadeOut, along);

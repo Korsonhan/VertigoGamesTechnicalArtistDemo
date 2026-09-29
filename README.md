@@ -59,7 +59,7 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
 ### How it is built
 
-- **Wind ribbons (shader).** `WindRibbonMesh` generates six ribbons that leave the muzzle and sweep back along the front and underside of the rifle, like the reference. Each follows a smooth path through a few control points and rolls from a sheet into a thin line as it goes. They are built as a single mesh: one draw call and about 600 vertices, editable in the Inspector. `WindRibbon.shader` (hand-written HLSL, additive) does the following:
+- **Wind ribbons (shader).** `WindRibbonMesh` generates seven ribbons that leave the muzzle and sweep back along the front and underside of the rifle, like the reference. Each follows a smooth path through a few control points and rolls from a sheet into a thin line as it goes. They are built as a single mesh: one draw call and about 700 vertices, editable in the Inspector. `WindRibbon.shader` (hand-written HLSL, additive) does the following:
   - draws a thin bright line along one edge of each ribbon, with a soft translucent sheet trailing off the other side;
   - moves light along the ribbon by scrolling the provided streak sprite in two layers at different speeds;
   - fades the ribbon in and out over long, soft ends;
@@ -73,13 +73,13 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
   Lighting is the main light plus per-vertex SH, with no shadows.
 - **Secondary effects (Particle System).**
-  - A few small four-point glints: each is a camera-facing cross mesh of two quads, so no star texture is needed.
-  - Fine dust drifting with the wind around the front of the rifle, with light turbulence.
+  - Small four-point glints around the middle of the rifle: each is a camera-facing cross mesh of two quads, so no star texture is needed.
+  - Fine dust drifting with the wind around the front and middle of the rifle, with light turbulence.
   - A soft halo over the core.
 
-  All of them simulate in local space, are capped at 4–14 particles each and share one additive URP shader.
+  All of them simulate in local space, are capped at 4–22 particles each and share one additive URP shader.
 - **Scene.** The backdrop is a full-screen radial gradient drawn by a clip-space quad, with no texture and dithered against banding. Post-processing runs inside the project: bloom at quarter resolution with 5 iterations, neutral tonemapping and a vignette.
-- **Cost.** 27 draw calls (most of them the bloom chain), about 5,500 triangles and about 15 live particles.
+- **Cost.** 27 draw calls (most of them the bloom chain), about 5,600 triangles and about 22 live particles.
 - **Tooling.** `WeaponVFX/Editor/WeaponVfxBuilder.cs` (**Tools → Vertigo Demo → Rebuild Weapon VFX**) regenerates the materials, post-processing profile, weapon prefab and scene. A PlayMode test checks that every effect is alive and logs the rendering cost.
 
 ## Project layout
