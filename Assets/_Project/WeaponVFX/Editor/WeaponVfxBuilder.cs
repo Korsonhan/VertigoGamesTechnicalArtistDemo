@@ -51,15 +51,13 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             var ribbon = Material("M_FX_WindRibbon", "VertigoDemo/FX/Wind Ribbon");
             ribbon.SetTexture("_StreakTex", FxTexture("ui_glow_04"));
             ribbon.SetColor("_LineColor", new Color(1.9f, 1.4f, 0.5f));
-            ribbon.SetColor("_SheetColor", new Color(0.95f, 0.66f, 0.2f));
+            ribbon.SetColor("_SheetColor", new Color(0.8f, 0.55f, 0.16f));
             ribbon.SetFloat("_Intensity", 1f);
             ribbon.SetFloat("_LineWidth", 0.08f);
-            // A clearly visible translucent band beside each line that fades out slowly, like the reference.
-            ribbon.SetFloat("_SheetOpacity", 0.9f);
-            ribbon.SetFloat("_SheetFalloff", 1.1f);
+            ribbon.SetFloat("_SheetOpacity", 0.55f);
             ribbon.SetFloat("_FlowContrast", 0.5f);
             ribbon.SetFloat("_FadeIn", 0.2f);
-            ribbon.SetFloat("_FadeOut", 0.45f);
+            ribbon.SetFloat("_FadeOut", 0.35f);
 
             const string particleShader = "VertigoDemo/FX/Particle Additive";
             var sparkle = ParticleMaterial("M_FX_WeaponSparkle", particleShader, "ui_fx_glow_01", new Color(2.2f, 1.8f, 1.1f), CompareFunction.LessEqual);
@@ -204,30 +202,39 @@ namespace VertigoDemo.WeaponVFX.EditorTools
         // Paths in the rifle's space: muzzle +Z, stock -Z, and negative X is the side facing the default
         // camera. Like the reference, the ribbons leave the muzzle, sweep back and down along the front
         // and underside of the rifle and fade out before the grip; one passes over the top and one runs
-        // behind the rifle, for depth when it turns.
+        // behind the rifle, for depth when it turns. Wisps of loose, broken strands trail ahead of the
+        // muzzle and off the top of the stock.
         static WindRibbonMesh.Ribbon[] RibbonDefinitions() => new[]
         {
             // Along the lower handguard, dipping past the foregrip, across the receiver and up to the grip.
             Ribbon(new[] { P(-0.022f, 0.028f, 0.530f), P(-0.035f, 0.008f, 0.410f), P(-0.047f, -0.030f, 0.280f), P(-0.056f, -0.055f, 0.150f), P(-0.062f, -0.058f, 0.030f), P(-0.055f, -0.040f, -0.080f), P(-0.042f, -0.015f, -0.170f) },
-                65f, 35f, 0.044f, 1f, 1f),
-            // Short, steep sweep under the foregrip, trailing off past the drum.
-            Ribbon(new[] { P(-0.015f, 0.018f, 0.500f), P(-0.028f, -0.015f, 0.410f), P(-0.038f, -0.060f, 0.300f), P(-0.045f, -0.095f, 0.200f), P(-0.048f, -0.110f, 0.120f), P(-0.052f, -0.122f, 0.050f) },
-                72f, 40f, 0.042f, 0.85f, 1.15f),
-            // Wide, soft band under the front, mostly sheet: the translucent flow below the foregrip.
-            Ribbon(new[] { P(-0.020f, 0.005f, 0.560f), P(-0.034f, -0.040f, 0.440f), P(-0.044f, -0.085f, 0.310f), P(-0.050f, -0.118f, 0.190f), P(-0.054f, -0.135f, 0.090f) },
-                80f, 55f, 0.060f, 0.55f, 0.85f),
+                60f, 25f, 0.030f, 1f, 1f),
+            // Short, steep sweep under the foregrip.
+            Ribbon(new[] { P(-0.015f, 0.018f, 0.500f), P(-0.028f, -0.015f, 0.410f), P(-0.038f, -0.060f, 0.300f), P(-0.045f, -0.095f, 0.200f), P(-0.048f, -0.110f, 0.120f) },
+                70f, 30f, 0.028f, 0.85f, 1.15f),
             // Across the face of the handguard, the scarf and the cage.
             Ribbon(new[] { P(-0.030f, 0.035f, 0.450f), P(-0.040f, 0.030f, 0.330f), P(-0.050f, 0.020f, 0.200f), P(-0.062f, 0.010f, 0.080f), P(-0.068f, 0.012f, -0.020f), P(-0.050f, 0.025f, -0.120f), P(-0.040f, 0.030f, -0.180f) },
-                55f, 20f, 0.034f, 1f, 0.9f),
+                55f, 20f, 0.026f, 1f, 0.9f),
             // Over the barrel and past the sight, slipping behind the scarf.
             Ribbon(new[] { P(-0.012f, 0.050f, 0.520f), P(-0.020f, 0.070f, 0.400f), P(-0.030f, 0.090f, 0.270f), P(-0.020f, 0.095f, 0.170f), P(0.020f, 0.100f, 0.100f) },
                 -45f, -20f, 0.022f, 0.7f, 1.2f),
             // Soft wisp coming off the muzzle.
             Ribbon(new[] { P(-0.010f, 0.035f, 0.585f), P(-0.018f, 0.028f, 0.520f), P(-0.026f, 0.018f, 0.450f), P(-0.032f, 0.005f, 0.380f) },
-                75f, 60f, 0.050f, 0.5f, 0.8f),
+                75f, 60f, 0.035f, 0.5f, 0.8f),
             // Behind the rifle.
             Ribbon(new[] { P(0.015f, 0.020f, 0.500f), P(0.035f, -0.015f, 0.360f), P(0.050f, -0.045f, 0.200f), P(0.055f, -0.060f, 0.050f), P(0.045f, -0.040f, -0.080f) },
-                60f, 30f, 0.034f, 0.6f, 1.05f),
+                60f, 30f, 0.028f, 0.6f, 1.05f),
+
+            // Broken strands leaving the muzzle and drooping under the front of the handguard.
+            Wisp(new[] { P(-0.014f, 0.012f, 0.600f), P(-0.020f, 0.000f, 0.520f), P(-0.028f, -0.018f, 0.440f), P(-0.035f, -0.040f, 0.360f), P(-0.040f, -0.062f, 0.290f) },
+                0.070f, 0.8f, 0.9f),
+            Wisp(new[] { P(-0.018f, -0.012f, 0.580f), P(-0.026f, -0.030f, 0.500f), P(-0.034f, -0.055f, 0.420f), P(-0.040f, -0.080f, 0.340f), P(-0.044f, -0.100f, 0.270f) },
+                0.055f, 0.7f, 1.05f),
+            // Broken strands trailing off the top of the stock; the stock hides their lower edge.
+            Wisp(new[] { P(0.012f, 0.090f, -0.040f), P(0.014f, 0.100f, -0.130f), P(0.016f, 0.114f, -0.220f), P(0.018f, 0.130f, -0.310f), P(0.020f, 0.146f, -0.430f) },
+                0.070f, 0.65f, 0.95f),
+            Wisp(new[] { P(0.020f, 0.105f, -0.080f), P(0.022f, 0.118f, -0.170f), P(0.024f, 0.134f, -0.250f), P(0.026f, 0.148f, -0.330f) },
+                0.050f, 0.5f, 1.1f),
         };
 
         static Vector3 P(float x, float y, float z) => new Vector3(x, y, z);
@@ -240,6 +247,14 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             brightness = brightness,
             speed = speed,
         };
+
+        // Wisps stand up to face the side view, so their strands read clearly.
+        static WindRibbonMesh.Ribbon Wisp(Vector3[] path, float width, float brightness, float speed)
+        {
+            var wisp = Ribbon(path, 85f, 75f, width, brightness, speed);
+            wisp.wisp = 1f;
+            return wisp;
+        }
 
         // Four-point glints: a camera-facing cross of two thin quads, each squashing the soft round glow
         // into a streak. Eight vertices per sparkle, and no dedicated star texture needed.

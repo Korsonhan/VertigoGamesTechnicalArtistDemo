@@ -8,8 +8,8 @@ namespace VertigoDemo.WeaponVFX
     /// Procedural wind ribbons flowing along the rifle, from the muzzle (local +Z) towards the stock.
     /// Each ribbon follows a smooth path through a few control points, and every ribbon goes into one
     /// mesh, so they cost a single draw call. Per-ribbon variation reaches the Wind Ribbon shader
-    /// through vertex colour (R = seed, G = speed, B = brightness); UV.x runs along the ribbon by arc
-    /// length and UV.y across it. Normals hold the direction the ribbon flutters in.
+    /// through vertex colour (R = seed, G = speed, B = brightness, A = wisp); UV.x runs along the ribbon
+    /// by arc length and UV.y across it. Normals hold the direction the ribbon flutters in.
     /// </summary>
     [ExecuteAlways]
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -25,6 +25,8 @@ namespace VertigoDemo.WeaponVFX
             public float width;
             [Range(0f, 2f)] public float brightness;
             [Range(0.5f, 1.5f)] public float speed;
+            [Tooltip("0 draws a bright line beside a translucent sheet; 1 breaks the ribbon into loose, fragmented strands, like a wisp of wind.")]
+            [Range(0f, 1f)] public float wisp;
         }
 
         [SerializeField] Ribbon[] ribbons = Array.Empty<Ribbon>();
@@ -94,7 +96,7 @@ namespace VertigoDemo.WeaponVFX
             List<Vector2> uvs, List<Color> colors, List<int> triangles)
         {
             float seed = Mathf.Repeat(index * 0.618034f + 0.13f, 1f);
-            var color = new Color(seed, Mathf.InverseLerp(0.5f, 1.5f, ribbon.speed), ribbon.brightness, 1f);
+            var color = new Color(seed, Mathf.InverseLerp(0.5f, 1.5f, ribbon.speed), ribbon.brightness, ribbon.wisp);
             int first = vertices.Count;
 
             // Sample the path and measure it, so the flow scrolls at an even speed along the ribbon.

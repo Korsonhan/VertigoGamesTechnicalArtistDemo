@@ -59,13 +59,14 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
 ### How it is built
 
-- **Wind ribbons (shader).** `WindRibbonMesh` generates seven ribbons that leave the muzzle and sweep back along the front and underside of the rifle, like the reference. Each follows a smooth path through a few control points and rolls from a sheet into a thin line as it goes. They are built as a single mesh: one draw call and about 700 vertices, editable in the Inspector. `WindRibbon.shader` (hand-written HLSL, additive) does the following:
+- **Wind ribbons (shader).** `WindRibbonMesh` generates six ribbons that leave the muzzle and sweep back along the front and underside of the rifle, like the reference, plus four wisps: two leaving the muzzle and two trailing off the top of the stock. Each follows a smooth path through a few control points and rolls from a sheet into a thin line as it goes. They are built as a single mesh: one draw call and about 1,000 vertices, editable in the Inspector. `WindRibbon.shader` (hand-written HLSL, additive) does the following:
   - draws a thin bright line along one edge of each ribbon, with a soft translucent sheet trailing off the other side;
+  - breaks each wisp into a few soft strands made of tapered pieces that drift at their own pace, for the fragmented, translucent wind of the reference;
   - moves light along the ribbon by scrolling the provided streak sprite in two layers at different speeds;
   - fades the ribbon in and out over long, soft ends;
-  - flutters it with a travelling wave in the vertex shader.
+  - flutters it with a travelling wave in the vertex shader, wisps more loosely.
 
-  Seed, speed and brightness for each ribbon travel in vertex colours, so one material covers all of them.
+  Seed, speed, brightness and the wisp flag for each ribbon travel in vertex colours, so one material covers all of them.
 - **Weapon shader.** The rifle comes with a diffuse map only, so `WeaponLegendary.shader` derives the other layers:
   - warm, saturated texels are read as polished gold, with tinted, tighter specular and a fake sky reflection;
   - the pale ball inside the football cage glows and pulses, masked by an object-space sphere that skips the gold bars;
@@ -79,7 +80,7 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
   All of them simulate in local space, are capped at 4–22 particles each and share one additive URP shader.
 - **Scene.** The backdrop is a full-screen radial gradient drawn by a clip-space quad, with no texture and dithered against banding. Post-processing runs inside the project: bloom at quarter resolution with 5 iterations, neutral tonemapping and a vignette.
-- **Cost.** 27 draw calls (most of them the bloom chain), about 5,600 triangles and about 22 live particles.
+- **Cost.** 27 draw calls (most of them the bloom chain), about 5,900 triangles and about 21 live particles.
 - **Tooling.** `WeaponVFX/Editor/WeaponVfxBuilder.cs` (**Tools → Vertigo Demo → Rebuild Weapon VFX**) regenerates the materials, post-processing profile, weapon prefab and scene. A PlayMode test checks that every effect is alive and logs the rendering cost.
 
 ## Project layout
