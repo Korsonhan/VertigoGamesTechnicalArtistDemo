@@ -5,10 +5,11 @@ using UnityEngine;
 namespace VertigoDemo.WeaponVFX
 {
     /// <summary>
-    /// Procedural wind ribbons spiralling around the weapon's barrel axis (local Z, muzzle at +Z).
-    /// Every ribbon goes into one mesh, so they cost a single draw call. Per-ribbon variation reaches
-    /// the Wind Ribbon shader through vertex colour (R = seed, G = speed, B = brightness); UV.x runs
-    /// from muzzle to tail and UV.y across the ribbon. Normals hold the outward direction for flutter.
+    /// Procedural wind ribbons flowing along the rifle, from the muzzle (local +Z) towards the stock.
+    /// Each ribbon follows a smooth path through a few control points, and every ribbon goes into one
+    /// mesh, so they cost a single draw call. Per-ribbon variation reaches the Wind Ribbon shader
+    /// through vertex colour (R = seed, G = speed, B = brightness); UV.x runs along the ribbon by arc
+    /// length and UV.y across it. Normals hold the direction the ribbon flutters in.
     /// </summary>
     [ExecuteAlways]
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
@@ -17,34 +18,25 @@ namespace VertigoDemo.WeaponVFX
         [Serializable]
         public struct Ribbon
         {
-            [Tooltip("Local Z at the muzzle end (x) and at the tail (y).")]
-            public Vector2 zRange;
-            [Tooltip("Angle around the barrel axis at the start, in degrees: 90 is above, 180 faces the default camera.")]
-            public float startAngle;
-            [Tooltip("Turns around the axis over the ribbon's length. Negative spins the other way.")]
-            public float turns;
-            [Tooltip("Distance from the axis at the start (x) and at the tail (y).")]
-            public Vector2 radius;
-            [Tooltip("Height of the axis the ribbon orbits, at the start (x) and at the tail (y).")]
-            public Vector2 axisHeight;
+            [Tooltip("Control points from the muzzle end to the tail, in the rifle's local space (muzzle at +Z).")]
+            public Vector3[] path;
+            [Tooltip("Roll around the path at the start (x) and at the tail (y), in degrees: 0 lies flat and is seen edge-on from the side, 90 stands up and faces the side view.")]
+            public Vector2 roll;
             public float width;
             [Range(0f, 2f)] public float brightness;
             [Range(0.5f, 1.5f)] public float speed;
         }
 
         [SerializeField] Ribbon[] ribbons = Array.Empty<Ribbon>();
-        [SerializeField, Range(8, 128)] int segments = 64;
-        [Tooltip("Squashes the orbit front to back: the rifle is much thinner than it is tall.")]
-        [SerializeField, Range(0.3f, 1.5f)] float depthScale = 0.8f;
+        [SerializeField, Range(8, 128)] int segments = 48;
 
         Mesh mesh;
         bool dirty;
 
-        public void Configure(Ribbon[] definitions, int segmentCount, float depth)
+        public void Configure(Ribbon[] definitions, int segmentCount)
         {
             ribbons = definitions;
             segments = segmentCount;
-            depthScale = depth;
             Rebuild();
         }
 
@@ -83,7 +75,10 @@ namespace VertigoDemo.WeaponVFX
             var triangles = new List<int>(ribbons.Length * segments * 6);
 
             for (int i = 0; i < ribbons.Length; i++)
-                AppendRibbon(ribbons[i], i, vertices, normals, uvs, colors, triangles);
+            {
+                if (ribbons[i].path != null && ribbons[i].path.Length >= 2)
+                    AppendRibbon(ribbons[i], i, vertices, normals, uvs, colors, triangles);
+            }
 
             mesh.Clear();
             mesh.SetVertices(vertices);
@@ -101,27 +96,40 @@ namespace VertigoDemo.WeaponVFX
             float seed = Mathf.Repeat(index * 0.618034f + 0.13f, 1f);
             var color = new Color(seed, Mathf.InverseLerp(0.5f, 1.5f, ribbon.speed), ribbon.brightness, 1f);
             int first = vertices.Count;
-            const float step = 0.005f;
+
+            // Sample the path and measure it, so the flow scrolls at an even speed along the ribbon.
+            var points = new Vector3[segments + 1];
+            var distances = new float[segments + 1];
+            for (int s = 0; s <= segments; s++)
+            {
+                points[s] = PathPoint(ribbon.path, s / (float)segments);
+                if (s > 0)
+                    distances[s] = distances[s - 1] + Vector3.Distance(points[s - 1], points[s]);
+            }
+            float length = Mathf.Max(distances[segments], 1e-4f);
 
             for (int s = 0; s <= segments; s++)
             {
                 float t = s / (float)segments;
-                Vector3 position = Point(ribbon, t);
-                Vector3 tangent = (Point(ribbon, Mathf.Min(1f, t + step)) - Point(ribbon, Mathf.Max(0f, t - step))).normalized;
-                var axis = new Vector3(0f, Mathf.Lerp(ribbon.axisHeight.x, ribbon.axisHeight.y, t), position.z);
-                Vector3 outward = (position - axis).normalized;
-                // Lying on the orbit's surface, the ribbon turns edge-on as it wraps, which reads as a twist.
-                Vector3 across = Vector3.Cross(tangent, outward).normalized;
-                // Clamp: sin(PI) comes out a hair below zero in float, and a fractional power of that is NaN.
-                float taper = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(Mathf.PI * t)), 0.7f);
-                float halfWidth = 0.5f * ribbon.width * taper * (0.55f + 0.45f * t);
+                Vector3 tangent = (points[Mathf.Min(s + 1, segments)] - points[Mathf.Max(s - 1, 0)]).normalized;
+                Vector3 flat = Vector3.Cross(tangent, Vector3.up);
+                flat = flat.sqrMagnitude > 1e-6f ? flat.normalized : Vector3.right;
+                // Rolling the width around the path lets a ribbon turn from a sheet into a thin line.
+                Vector3 across = Quaternion.AngleAxis(Mathf.Lerp(ribbon.roll.x, ribbon.roll.y, t), tangent) * flat;
+                Vector3 facing = Vector3.Cross(across, tangent);
+                // Flutter half sideways and half off the face, so it reads from every view angle.
+                Vector3 flutter = (across + facing).normalized;
+                // Thin at both ends. Clamp: sin(PI) comes out a hair below zero in float, and a fractional power of that is NaN.
+                float taper = Mathf.Pow(Mathf.Max(0f, Mathf.Sin(Mathf.PI * t)), 0.8f);
+                float halfWidth = 0.5f * ribbon.width * taper;
+                float u = distances[s] / length;
 
-                vertices.Add(position - across * halfWidth);
-                vertices.Add(position + across * halfWidth);
-                normals.Add(outward);
-                normals.Add(outward);
-                uvs.Add(new Vector2(t, 0f));
-                uvs.Add(new Vector2(t, 1f));
+                vertices.Add(points[s] - across * halfWidth);
+                vertices.Add(points[s] + across * halfWidth);
+                normals.Add(flutter);
+                normals.Add(flutter);
+                uvs.Add(new Vector2(u, 0f));
+                uvs.Add(new Vector2(u, 1f));
                 colors.Add(color);
                 colors.Add(color);
 
@@ -137,13 +145,18 @@ namespace VertigoDemo.WeaponVFX
             }
         }
 
-        Vector3 Point(in Ribbon ribbon, float t)
+        // Catmull-Rom spline through the control points, t from 0 (first point) to 1 (last point).
+        static Vector3 PathPoint(Vector3[] path, float t)
         {
-            float angle = (ribbon.startAngle + 360f * ribbon.turns * t) * Mathf.Deg2Rad;
-            float radius = Mathf.Lerp(ribbon.radius.x, ribbon.radius.y, t * t * (3f - 2f * t));
-            float height = Mathf.Lerp(ribbon.axisHeight.x, ribbon.axisHeight.y, t);
-            float z = Mathf.Lerp(ribbon.zRange.x, ribbon.zRange.y, t);
-            return new Vector3(Mathf.Cos(angle) * radius * depthScale, height + Mathf.Sin(angle) * radius, z);
+            int spans = path.Length - 1;
+            float scaled = Mathf.Clamp01(t) * spans;
+            int i = Mathf.Min((int)scaled, spans - 1);
+            float f = scaled - i;
+            Vector3 p0 = path[Mathf.Max(i - 1, 0)];
+            Vector3 p1 = path[i];
+            Vector3 p2 = path[i + 1];
+            Vector3 p3 = path[Mathf.Min(i + 2, spans)];
+            return 0.5f * (2f * p1 + (p2 - p0) * f + (2f * p0 - 5f * p1 + 4f * p2 - p3) * (f * f) + (3f * p1 - p0 - 3f * p2 + p3) * (f * f * f));
         }
     }
 }

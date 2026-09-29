@@ -57,11 +57,11 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
 ### How it is built
 
-- **Wind ribbons (shader).** `WindRibbonMesh` generates eight ribbons that spiral around the barrel axis, as a single mesh: one draw call, about 1,200 vertices, editable in the Inspector. `WindRibbon.shader` (hand-written HLSL, additive) does the following:
-  - scrolls the provided streak sprite along each ribbon in two layers at different speeds;
-  - shapes it into a faint translucent band with bright rims;
-  - fades it in at the muzzle and out towards the stock;
-  - flutters the ribbon with a travelling wave in the vertex shader.
+- **Wind ribbons (shader).** `WindRibbonMesh` generates six ribbons that leave the muzzle and sweep back along the front and underside of the rifle, like the reference. Each follows a smooth path through a few control points and rolls from a sheet into a thin line as it goes. They are built as a single mesh: one draw call and about 600 vertices, editable in the Inspector. `WindRibbon.shader` (hand-written HLSL, additive) does the following:
+  - draws a thin bright line along one edge of each ribbon, with a soft translucent sheet trailing off the other side;
+  - moves light along the ribbon by scrolling the provided streak sprite in two layers at different speeds;
+  - fades the ribbon in and out over long, soft ends;
+  - flutters it with a travelling wave in the vertex shader.
 
   Seed, speed and brightness for each ribbon travel in vertex colours, so one material covers all of them.
 - **Weapon shader.** The rifle comes with a diffuse map only, so `WeaponLegendary.shader` derives the other layers:
@@ -71,14 +71,13 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
   Lighting is the main light plus per-vertex SH, with no shadows.
 - **Secondary effects (Particle System).**
-  - Four-point glints: each is a camera-facing cross mesh of two quads, so no star texture is needed.
-  - Drifting dust with light turbulence.
-  - Motion streaks that orbit the barrel on their way back (orbital velocity on stretched billboards).
+  - A few small four-point glints: each is a camera-facing cross mesh of two quads, so no star texture is needed.
+  - Fine dust drifting with the wind around the front of the rifle, with light turbulence.
   - A soft halo over the core.
 
-  All of them simulate in local space, are capped at 4–48 particles each and share one additive URP shader.
+  All of them simulate in local space, are capped at 4–14 particles each and share one additive URP shader.
 - **Scene.** The backdrop is a full-screen radial gradient drawn by a clip-space quad, with no texture and dithered against banding. Post-processing runs inside the project: bloom at quarter resolution with 5 iterations, neutral tonemapping and a vignette.
-- **Cost.** 28 draw calls (most of them the bloom chain), about 6,100 triangles and about 45 live particles.
+- **Cost.** 27 draw calls (most of them the bloom chain), about 5,500 triangles and about 15 live particles.
 - **Tooling.** `WeaponVFX/Editor/WeaponVfxBuilder.cs` (**Tools → Vertigo Demo → Rebuild Weapon VFX**) regenerates the materials, post-processing profile, weapon prefab and scene. A PlayMode test checks that every effect is alive and logs the rendering cost.
 
 ## Project layout

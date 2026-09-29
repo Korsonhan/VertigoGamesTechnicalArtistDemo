@@ -43,19 +43,25 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             var weapon = Material("M_Weapon_TopScorer", "VertigoDemo/Weapon/Legendary");
             weapon.SetTexture("_BaseMap", AssetDatabase.LoadAssetAtPath<Texture2D>(AlbedoPath));
             weapon.SetVector("_CoreCenter", CoreCenter);
+            // Kept below the point where tonemapping bleaches it, so the ball stays a saturated yellow.
+            weapon.SetColor("_CoreColor", new Color(1.9f, 1.45f, 0.12f));
             weapon.SetColor("_SheenColor", new Color(2.4f, 1.9f, 1f));
             weapon.SetFloat("_SheenWidth", 0.07f);
 
             var ribbon = Material("M_FX_WindRibbon", "VertigoDemo/FX/Wind Ribbon");
             ribbon.SetTexture("_StreakTex", FxTexture("ui_glow_04"));
-            ribbon.SetColor("_CoreColor", new Color(1.6f, 1.15f, 0.45f));
-            ribbon.SetColor("_EdgeColor", new Color(1f, 0.5f, 0.08f));
-            ribbon.SetFloat("_Intensity", 1.5f);
+            ribbon.SetColor("_LineColor", new Color(1.9f, 1.4f, 0.5f));
+            ribbon.SetColor("_SheetColor", new Color(0.8f, 0.55f, 0.16f));
+            ribbon.SetFloat("_Intensity", 1f);
+            ribbon.SetFloat("_LineWidth", 0.08f);
+            ribbon.SetFloat("_SheetOpacity", 0.55f);
+            ribbon.SetFloat("_FlowContrast", 0.5f);
+            ribbon.SetFloat("_FadeIn", 0.2f);
+            ribbon.SetFloat("_FadeOut", 0.35f);
 
             const string particleShader = "VertigoDemo/FX/Particle Additive";
             var sparkle = ParticleMaterial("M_FX_WeaponSparkle", particleShader, "ui_fx_glow_01", new Color(2.2f, 1.8f, 1.1f), CompareFunction.LessEqual);
-            var dust = ParticleMaterial("M_FX_WeaponDust", particleShader, "ui_fx_glow_01", new Color(1.6f, 1.2f, 0.6f), CompareFunction.LessEqual);
-            var streak = ParticleMaterial("M_FX_WeaponStreak", particleShader, "ui_fx_glow_01", new Color(1.8f, 1.4f, 0.7f), CompareFunction.LessEqual);
+            var dust = ParticleMaterial("M_FX_WeaponDust", particleShader, "ui_fx_glow_01", new Color(1.3f, 1.1f, 0.65f), CompareFunction.LessEqual);
             var coreGlow = ParticleMaterial("M_FX_WeaponCoreGlow", particleShader, "ui_fx_glow_01", new Color(1.6f, 1.1f, 0.35f), CompareFunction.Always);
 
             var backdrop = Material("M_BG_Inspect", "VertigoDemo/FX/Background Gradient");
@@ -63,7 +69,7 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             backdrop.SetColor("_EdgeColor", BackdropEdge);
 
             var profile = CreateVolumeProfile(SettingsFolder + "/VP_WeaponInspect.asset");
-            BuildWeaponPrefab(weapon, ribbon, sparkle, dust, streak, coreGlow);
+            BuildWeaponPrefab(weapon, ribbon, sparkle, dust, coreGlow);
             BuildScene(backdrop, profile);
 
             AssetDatabase.SaveAssets();
@@ -88,7 +94,13 @@ namespace VertigoDemo.WeaponVFX.EditorTools
                 material = new Material(shader);
                 AssetDatabase.CreateAsset(material, path);
             }
-            material.shader = shader;
+            else
+            {
+                // Start again from the shader's defaults, which also drops properties it no longer has.
+                var fresh = new Material(shader) { name = material.name };
+                EditorUtility.CopySerialized(fresh, material);
+                Object.DestroyImmediate(fresh);
+            }
             EditorUtility.SetDirty(material);
             return material;
         }
@@ -150,7 +162,7 @@ namespace VertigoDemo.WeaponVFX.EditorTools
 
         // ------------------------------------------------------------------ weapon prefab
 
-        static void BuildWeaponPrefab(Material weapon, Material ribbon, Material sparkle, Material dust, Material streak, Material coreGlow)
+        static void BuildWeaponPrefab(Material weapon, Material ribbon, Material sparkle, Material dust, Material coreGlow)
         {
             var root = new GameObject("PF_Weapon_TopScorer");
             // Everything below lives in the model's own space; the offset centres the rifle on the pivot.
@@ -173,7 +185,7 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             var ribbonRenderer = ribbons.GetComponent<MeshRenderer>();
             ribbonRenderer.sharedMaterial = ribbon;
             MakeUnlitRenderer(ribbonRenderer);
-            ribbons.GetComponent<WindRibbonMesh>().Configure(RibbonDefinitions(), 72, 0.85f);
+            ribbons.GetComponent<WindRibbonMesh>().Configure(RibbonDefinitions(), 48);
             // The mesh is regenerated on load; keep the generated (DontSave) mesh out of the prefab.
             ribbons.GetComponent<MeshFilter>().sharedMesh = null;
 
@@ -181,35 +193,44 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             fx.transform.SetParent(modelSpace.transform, false);
             BuildSparkles(fx.transform, sparkle, bounds);
             BuildDust(fx.transform, dust, bounds);
-            BuildWindStreaks(fx.transform, streak);
             BuildCoreGlow(fx.transform, coreGlow);
 
             PrefabUtility.SaveAsPrefabAsset(root, WeaponPrefabPath);
             Object.DestroyImmediate(root);
         }
 
-        // Muzzle is +Z, stock -Z. Angles: 90 above the barrel, 180 facing the side-view camera.
-        // Dense at the muzzle, spreading as they wrap back, and gone before the stock, like the reference.
+        // Paths in the rifle's space: muzzle +Z, stock -Z, and negative X is the side facing the default
+        // camera. Like the reference, the ribbons leave the muzzle, sweep back and down along the front
+        // and underside of the rifle and fade out before the grip; one passes over the top and one runs
+        // behind the rifle, for depth when it turns.
         static WindRibbonMesh.Ribbon[] RibbonDefinitions() => new[]
         {
-            Ribbon(0.62f, -0.20f, 200f, 0.55f, 0.030f, 0.12f, 0.045f, 0.01f, 0.045f, 1.0f, 1.0f),
-            Ribbon(0.60f, -0.05f, 110f, 0.45f, 0.030f, 0.10f, 0.045f, 0.04f, 0.035f, 0.9f, 1.15f),
-            Ribbon(0.64f, -0.25f, 290f, 0.60f, 0.035f, 0.14f, 0.040f, -0.01f, 0.050f, 1.1f, 0.9f),
-            Ribbon(0.55f, 0.05f, 20f, 0.50f, 0.030f, 0.09f, 0.045f, -0.02f, 0.030f, 0.8f, 1.25f),
-            Ribbon(0.58f, -0.15f, 160f, -0.45f, 0.030f, 0.11f, 0.050f, 0.06f, 0.040f, 0.9f, 1.05f),
-            Ribbon(0.50f, -0.22f, 245f, 0.40f, 0.045f, 0.13f, 0.030f, -0.03f, 0.040f, 0.85f, 0.95f),
-            Ribbon(0.66f, -0.10f, 70f, 0.62f, 0.030f, 0.10f, 0.050f, 0.07f, 0.028f, 0.75f, 1.2f),
-            Ribbon(0.57f, -0.28f, 330f, 0.50f, 0.040f, 0.15f, 0.040f, 0.00f, 0.045f, 0.8f, 0.85f),
+            // Along the lower handguard, dipping past the foregrip, across the receiver and up to the grip.
+            Ribbon(new[] { P(-0.022f, 0.028f, 0.530f), P(-0.035f, 0.008f, 0.410f), P(-0.047f, -0.030f, 0.280f), P(-0.056f, -0.055f, 0.150f), P(-0.062f, -0.058f, 0.030f), P(-0.055f, -0.040f, -0.080f), P(-0.042f, -0.015f, -0.170f) },
+                60f, 25f, 0.030f, 1f, 1f),
+            // Short, steep sweep under the foregrip.
+            Ribbon(new[] { P(-0.015f, 0.018f, 0.500f), P(-0.028f, -0.015f, 0.410f), P(-0.038f, -0.060f, 0.300f), P(-0.045f, -0.095f, 0.200f), P(-0.048f, -0.110f, 0.120f) },
+                70f, 30f, 0.028f, 0.85f, 1.15f),
+            // Across the face of the handguard, the scarf and the cage.
+            Ribbon(new[] { P(-0.030f, 0.035f, 0.450f), P(-0.040f, 0.030f, 0.330f), P(-0.050f, 0.020f, 0.200f), P(-0.062f, 0.010f, 0.080f), P(-0.068f, 0.012f, -0.020f), P(-0.050f, 0.025f, -0.120f), P(-0.040f, 0.030f, -0.180f) },
+                55f, 20f, 0.026f, 1f, 0.9f),
+            // Over the barrel and past the sight, slipping behind the scarf.
+            Ribbon(new[] { P(-0.012f, 0.050f, 0.520f), P(-0.020f, 0.070f, 0.400f), P(-0.030f, 0.090f, 0.270f), P(-0.020f, 0.095f, 0.170f), P(0.020f, 0.100f, 0.100f) },
+                -45f, -20f, 0.022f, 0.7f, 1.2f),
+            // Soft wisp coming off the muzzle.
+            Ribbon(new[] { P(-0.010f, 0.035f, 0.585f), P(-0.018f, 0.028f, 0.520f), P(-0.026f, 0.018f, 0.450f), P(-0.032f, 0.005f, 0.380f) },
+                75f, 60f, 0.035f, 0.5f, 0.8f),
+            // Behind the rifle.
+            Ribbon(new[] { P(0.015f, 0.020f, 0.500f), P(0.035f, -0.015f, 0.360f), P(0.050f, -0.045f, 0.200f), P(0.055f, -0.060f, 0.050f), P(0.045f, -0.040f, -0.080f) },
+                60f, 30f, 0.028f, 0.6f, 1.05f),
         };
 
-        static WindRibbonMesh.Ribbon Ribbon(float zStart, float zEnd, float angle, float turns, float radiusStart, float radiusEnd,
-            float heightStart, float heightEnd, float width, float brightness, float speed) => new WindRibbonMesh.Ribbon
+        static Vector3 P(float x, float y, float z) => new Vector3(x, y, z);
+
+        static WindRibbonMesh.Ribbon Ribbon(Vector3[] path, float rollStart, float rollEnd, float width, float brightness, float speed) => new WindRibbonMesh.Ribbon
         {
-            zRange = new Vector2(zStart, zEnd),
-            startAngle = angle,
-            turns = turns,
-            radius = new Vector2(radiusStart, radiusEnd),
-            axisHeight = new Vector2(heightStart, heightEnd),
+            path = path,
+            roll = new Vector2(rollStart, rollEnd),
             width = width,
             brightness = brightness,
             speed = speed,
@@ -249,22 +270,23 @@ namespace VertigoDemo.WeaponVFX.EditorTools
 
         static void BuildSparkles(Transform parent, Material material, Bounds bounds)
         {
-            var system = NewSystem(parent, "Sparkles", material, 24);
+            var system = NewSystem(parent, "Sparkles", material, 6);
             var renderer = system.GetComponent<ParticleSystemRenderer>();
             renderer.renderMode = ParticleSystemRenderMode.Mesh;
             renderer.mesh = StarCrossMesh();
             renderer.alignment = ParticleSystemRenderSpace.View;
             var main = system.main;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(0.5f, 1f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.045f, 0.09f);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(0.6f, 1.1f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.022f, 0.045f);
             main.startRotation = new ParticleSystem.MinMaxCurve(-0.3f, 0.3f);
-            main.startColor = new Color(1f, 0.93f, 0.75f);
+            main.startColor = new Color(1f, 0.95f, 0.8f);
             var emission = system.emission;
-            emission.rateOverTime = 7f;
+            emission.rateOverTime = 2.5f;
+            // A few small glints on and just around the rifle, a little above centre like the reference.
             var shape = system.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
-            shape.position = bounds.center;
-            shape.scale = bounds.size + new Vector3(0.06f, 0.08f, 0.05f);
+            shape.position = bounds.center + new Vector3(0f, 0.02f, 0f);
+            shape.scale = bounds.size + new Vector3(0.02f, 0.02f, 0f);
             SizeOverLifetime(system, new Keyframe(0f, 0f), new Keyframe(0.35f, 1f), new Keyframe(1f, 0f));
             var spin = system.rotationOverLifetime;
             spin.enabled = true;
@@ -274,70 +296,34 @@ namespace VertigoDemo.WeaponVFX.EditorTools
 
         static void BuildDust(Transform parent, Material material, Bounds bounds)
         {
-            var system = NewSystem(parent, "Dust", material, 48);
+            var system = NewSystem(parent, "Dust", material, 14);
             var main = system.main;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(1.6f, 2.6f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.008f, 0.02f);
-            main.startColor = new Color(1f, 0.78f, 0.4f, 0.9f);
+            main.startLifetime = new ParticleSystem.MinMaxCurve(1.4f, 2.4f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.004f, 0.009f);
+            main.startColor = new Color(1f, 0.9f, 0.6f, 0.8f);
             var emission = system.emission;
-            emission.rateOverTime = 14f;
+            emission.rateOverTime = 5f;
+            // Only around the front of the rifle, where the wind is, so none collects at the grip.
             var shape = system.shape;
             shape.shapeType = ParticleSystemShapeType.Box;
-            shape.position = bounds.center;
-            shape.scale = Vector3.Scale(bounds.size, new Vector3(1.6f, 1.3f, 1.1f));
+            shape.position = bounds.center + new Vector3(0f, 0f, bounds.size.z * 0.2f);
+            shape.scale = Vector3.Scale(bounds.size, new Vector3(1.4f, 1f, 0.65f));
             // Drift with the wind, from muzzle to stock, with a little turbulence.
             var velocity = system.velocityOverLifetime;
             velocity.enabled = true;
             velocity.space = ParticleSystemSimulationSpace.Local;
             velocity.x = new ParticleSystem.MinMaxCurve(-0.01f, 0.01f);
             velocity.y = new ParticleSystem.MinMaxCurve(-0.015f, 0.02f);
-            velocity.z = new ParticleSystem.MinMaxCurve(-0.16f, -0.06f);
+            velocity.z = new ParticleSystem.MinMaxCurve(-0.1f, -0.04f);
             var noise = system.noise;
             noise.enabled = true;
-            noise.strength = 0.035f;
+            noise.strength = 0.02f;
             noise.frequency = 1.4f;
             noise.scrollSpeed = 0.25f;
             noise.octaveCount = 1;
             noise.quality = ParticleSystemNoiseQuality.Low;
             SizeOverLifetime(system, new Keyframe(0f, 0.6f), new Keyframe(0.5f, 1f), new Keyframe(1f, 0.4f));
             FadeInOut(system, 0.25f, 0.7f);
-        }
-
-        // Motion lines that spiral back around the barrel: orbital velocity around the barrel axis
-        // plus a push towards the stock, drawn as stretched billboards.
-        static void BuildWindStreaks(Transform parent, Material material)
-        {
-            var system = NewSystem(parent, "WindStreaks", material, 18);
-            var main = system.main;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(0.7f, 1.1f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.006f, 0.011f);
-            main.startColor = new Color(1f, 0.86f, 0.5f, 0.9f);
-            var emission = system.emission;
-            emission.rateOverTime = 6f;
-            var shape = system.shape;
-            shape.shapeType = ParticleSystemShapeType.Circle;
-            shape.radius = 0.07f;
-            shape.radiusThickness = 0.2f;
-            shape.position = new Vector3(0f, 0.045f, 0.52f);
-            var velocity = system.velocityOverLifetime;
-            velocity.enabled = true;
-            velocity.space = ParticleSystemSimulationSpace.Local;
-            velocity.x = new ParticleSystem.MinMaxCurve(0f);
-            velocity.y = new ParticleSystem.MinMaxCurve(0f);
-            velocity.z = new ParticleSystem.MinMaxCurve(-0.85f);
-            // Orbital X/Y/Z (and the offsets) must share a curve mode.
-            velocity.orbitalX = new ParticleSystem.MinMaxCurve(0f, 0f);
-            velocity.orbitalY = new ParticleSystem.MinMaxCurve(0f, 0f);
-            velocity.orbitalZ = new ParticleSystem.MinMaxCurve(2.2f, 3.4f);
-            velocity.orbitalOffsetX = new ParticleSystem.MinMaxCurve(0f);
-            velocity.orbitalOffsetY = new ParticleSystem.MinMaxCurve(0.04f);
-            velocity.orbitalOffsetZ = new ParticleSystem.MinMaxCurve(0f);
-            velocity.radial = new ParticleSystem.MinMaxCurve(0.06f);
-            var renderer = system.GetComponent<ParticleSystemRenderer>();
-            renderer.renderMode = ParticleSystemRenderMode.Stretch;
-            renderer.velocityScale = 0.12f;
-            renderer.lengthScale = 3f;
-            FadeInOut(system, 0.2f, 0.6f);
         }
 
         // Soft halo over the glowing ball; drawn without depth test so the cage bars cannot hide it.
@@ -347,8 +333,8 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             system.transform.localPosition = CoreCenter;
             var main = system.main;
             main.startLifetime = 1.2f;
-            main.startSize = 0.17f;
-            main.startColor = new Color(1f, 0.78f, 0.3f, 0.5f);
+            main.startSize = 0.15f;
+            main.startColor = new Color(1f, 0.8f, 0.3f, 0.35f);
             var emission = system.emission;
             emission.rateOverTime = 2.5f;
             var shape = system.shape;

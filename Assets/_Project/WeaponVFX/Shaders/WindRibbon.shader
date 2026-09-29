@@ -1,32 +1,39 @@
-// Flowing wind for the weapon ribbons (see WindRibbonMesh). Additive, unlit, one texture:
-// the tapered streak sprite is scrolled along the ribbon in two layers at different tiling and
-// speed, shaped across by a faint translucent body and bright rims, like a silk band catching light,
-// faded in at the muzzle and out at the tail.
-// A travelling wave in the vertex shader makes the ribbon flutter outward towards its tail.
+// Flowing wind for the weapon ribbons (see WindRibbonMesh). Additive, unlit, one texture.
+// Across the ribbon: a thin bright line along one edge and a soft translucent sheet trailing off
+// the other side, like a silk band catching the light. Along it: light travels from the muzzle to
+// the tail (the tapered streak sprite scrolled in two layers at different tiling and speed), and
+// long, soft ends fade the ribbon in and out so it never starts or stops abruptly.
+// A travelling wave in the vertex shader makes the ribbon flutter, more towards its tail.
 // Per-ribbon variation comes from vertex colour: R = seed, G = speed, B = brightness.
 Shader "VertigoDemo/FX/Wind Ribbon"
 {
     Properties
     {
         _StreakTex ("Streak (alpha)", 2D) = "white" {}
-        [HDR] _CoreColor ("Core", Color) = (1.7, 1.4, 0.8, 1)
-        [HDR] _EdgeColor ("Edge", Color) = (1.0, 0.55, 0.12, 1)
-        _Intensity ("Intensity", Float) = 1.4
+        [HDR] _LineColor ("Line", Color) = (1.5, 1.2, 0.6, 1)
+        [HDR] _SheetColor ("Sheet", Color) = (0.8, 0.55, 0.16, 1)
+        _Intensity ("Intensity", Float) = 1
+
+        [Header(Profile)]
+        _LinePosition ("Line Position", Range(0.5, 1)) = 0.86
+        _LineWidth ("Line Width", Range(0.01, 0.3)) = 0.06
+        _SheetOpacity ("Sheet Opacity", Range(0, 1)) = 0.35
 
         [Header(Flow)]
-        _FlowSpeed ("Streak Speed", Float) = 0.55
-        _StreakTiling ("Streak Tiling", Float) = 2.2
-        _DetailSpeed ("Detail Speed", Float) = 1.1
-        _DetailTiling ("Detail Tiling", Float) = 5.5
+        _FlowSpeed ("Streak Speed", Float) = 0.45
+        _StreakTiling ("Streak Tiling", Float) = 1.3
+        _DetailSpeed ("Detail Speed", Float) = 0.9
+        _DetailTiling ("Detail Tiling", Float) = 3
+        _FlowContrast ("Flow Contrast", Range(0, 1)) = 0.6
 
         [Header(Flutter)]
-        _WobbleAmplitude ("Amplitude", Float) = 0.006
-        _WobbleFrequency ("Frequency", Float) = 9
-        _WobbleSpeed ("Speed", Float) = 3
+        _WobbleAmplitude ("Amplitude", Float) = 0.005
+        _WobbleFrequency ("Frequency", Float) = 7
+        _WobbleSpeed ("Speed", Float) = 2.5
 
         [Header(Ends)]
-        _FadeIn ("Fade In Length", Range(0.01, 0.5)) = 0.15
-        _FadeOut ("Fade Out Length", Range(0.01, 0.9)) = 0.5
+        _FadeIn ("Fade In Length", Range(0.01, 0.9)) = 0.3
+        _FadeOut ("Fade Out Length", Range(0.01, 0.9)) = 0.55
     }
 
     SubShader
@@ -68,13 +75,17 @@ Shader "VertigoDemo/FX/Wind Ribbon"
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _StreakTex_ST;
-                half4 _CoreColor;
-                half4 _EdgeColor;
+                half4 _LineColor;
+                half4 _SheetColor;
                 half _Intensity;
+                half _LinePosition;
+                half _LineWidth;
+                half _SheetOpacity;
                 float _FlowSpeed;
                 float _StreakTiling;
                 float _DetailSpeed;
                 float _DetailTiling;
+                half _FlowContrast;
                 float _WobbleAmplitude;
                 float _WobbleFrequency;
                 float _WobbleSpeed;
@@ -99,24 +110,30 @@ Shader "VertigoDemo/FX/Wind Ribbon"
             half4 frag(Varyings input) : SV_Target
             {
                 float along = input.uv.x;
-                float across = input.uv.y;
+                half across = input.uv.y;
                 half seed = input.color.r;
                 half speed = lerp(0.75h, 1.3h, input.color.g);
                 half brightness = input.color.b;
 
-                // The sprite is a horizontal tapered stroke; sample a narrow band around its centre line.
-                float2 streakUV = float2(frac(along * _StreakTiling - _Time.y * _FlowSpeed * speed + seed * 3.17), 0.5 + (across - 0.5) * 0.3);
-                float2 detailUV = float2(frac(along * _DetailTiling - _Time.y * _DetailSpeed * speed + seed * 7.31), 0.5 + (across - 0.5) * 0.18);
-                half streak = SAMPLE_TEXTURE2D(_StreakTex, sampler_StreakTex, streakUV).a;
-                half detail = SAMPLE_TEXTURE2D(_StreakTex, sampler_StreakTex, detailUV).a;
+                // Light travelling towards the tail: the stroke sprite's centre line, scrolled in two
+                // layers. It only modulates the ribbon, so it brightens and dims without breaking into dashes.
+                float streakU = frac(along * _StreakTiling - _Time.y * _FlowSpeed * speed + seed * 3.17);
+                float detailU = frac(along * _DetailTiling - _Time.y * _DetailSpeed * speed + seed * 7.31);
+                half streak = SAMPLE_TEXTURE2D(_StreakTex, sampler_StreakTex, float2(streakU, 0.5)).a;
+                half detail = SAMPLE_TEXTURE2D(_StreakTex, sampler_StreakTex, float2(detailU, 0.5)).a;
+                half flow = lerp(1.0h, saturate(streak * 0.75h + detail * 0.45h), _FlowContrast);
 
-                half fromCenter = abs(across * 2.0h - 1.0h);
-                half body = smoothstep(1.0h, 0.0h, fromCenter) * 0.45h;
-                half rims = smoothstep(0.55h, 0.82h, fromCenter) * smoothstep(1.0h, 0.86h, fromCenter);
+                // Across: a thin line near one edge, and a sheet that is strongest beside the line and
+                // fades out towards the other edge.
+                half fromLine = (across - _LinePosition) / _LineWidth;
+                half stroke = exp2(-1.4427h * fromLine * fromLine);
+                half sheet = pow(saturate(across / _LinePosition), 1.6h) * smoothstep(1.0h, _LinePosition, across);
+
+                // Long, soft ends.
                 half ends = smoothstep(0.0h, _FadeIn, along) * smoothstep(1.0h, 1.0h - _FadeOut, along);
+                ends *= ends;
 
-                half flow = saturate(streak * 1.2h + detail * 0.6h);
-                half3 color = lerp(_EdgeColor.rgb, _CoreColor.rgb, rims) * (body * flow + rims * (0.5h + 0.9h * flow));
+                half3 color = _LineColor.rgb * (stroke * (0.35h + 0.65h * flow)) + _SheetColor.rgb * (sheet * _SheetOpacity * flow);
                 return half4(color * (ends * brightness * _Intensity), 0.0h);
             }
             ENDHLSL

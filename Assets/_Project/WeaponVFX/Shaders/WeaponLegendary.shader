@@ -149,10 +149,12 @@ Shader "VertigoDemo/Weapon/Legendary"
                 color += _RimColor.rgb * rim;
 
                 // Glowing ball: sphere mask around the cage centre, but only on the pale ball, not the gold bars.
+                // The glow replaces the lit colour rather than adding to it, so the white ball turns a
+                // saturated yellow instead of burning out to white.
                 float coreDistance = distance(input.positionOS, _CoreCenter.xyz);
                 half core = (1.0h - smoothstep(_CoreRadius * 0.55, _CoreRadius, coreDistance)) * (1.0h - smoothstep(0.12h, 0.35h, saturation));
                 half pulse = 0.75h + 0.25h * sin(_Time.y * _CorePulseSpeed);
-                color += _CoreColor.rgb * (core * pulse);
+                color = lerp(color, _CoreColor.rgb * pulse, core);
 
                 // Sheen sweep: crosses the rifle in the first half of each period, then rests past the stock.
                 float sweep = saturate(frac(_Time.y / _SheenPeriod) * 2.0);
