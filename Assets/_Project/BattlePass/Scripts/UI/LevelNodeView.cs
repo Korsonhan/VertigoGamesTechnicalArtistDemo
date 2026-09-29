@@ -6,7 +6,7 @@ using VertigoDemo.UI;
 
 namespace VertigoDemo.BattlePass.UI
 {
-    /// <summary>Numbered circle on the progress track.</summary>
+    /// <summary>Marker on the progress track: a numbered circle, or the pass ticket where the road starts.</summary>
     public sealed class LevelNodeView : MonoBehaviour
     {
         [SerializeField] Image circle;
@@ -17,8 +17,22 @@ namespace VertigoDemo.BattlePass.UI
         [SerializeField] Color lockedLabelColor = Color.white;
         [Tooltip("Pulsing ring around the level the player is working towards.")]
         [SerializeField] GameObject nextRing;
+        [Tooltip("Pass ticket shown instead of a number at the start of the road.")]
+        [SerializeField] GameObject ticket;
 
-        public void Setup(int level) => label.text = level.ToString();
+        public void Setup(int level)
+        {
+            label.text = level.ToString();
+            ticket.SetActive(false);
+        }
+
+        public void ShowTicket()
+        {
+            circle.gameObject.SetActive(false);
+            label.gameObject.SetActive(false);
+            nextRing.SetActive(false);
+            ticket.SetActive(true);
+        }
 
         public void SetReached(bool reached)
         {

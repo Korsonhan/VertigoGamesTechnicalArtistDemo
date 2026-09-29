@@ -94,10 +94,37 @@ namespace VertigoDemo.BattlePass.Tests
             Assert.AreEqual(RewardState.Locked, progress.GetState(4, RewardTrack.Premium));
         }
 
+        [Test]
+        public void StartRewardsAreWithinReachBeforeTheFirstLevel()
+        {
+            var progress = new BattlePassProgress(10, 100, level: 0, startPremium: 4, startFree: 1);
+
+            Assert.AreEqual(RewardState.Claimable, progress.GetState(0, RewardTrack.Free));
+            Assert.AreEqual(RewardState.PremiumLocked, progress.GetState(0, RewardTrack.Premium, 3));
+            Assert.AreEqual(RewardState.Locked, progress.GetState(1, RewardTrack.Free));
+            Assert.IsTrue(progress.TryClaim(0, RewardTrack.Free));
+            Assert.AreEqual(RewardState.Claimed, progress.GetState(0, RewardTrack.Free));
+        }
+
+        [Test]
+        public void ThePassUnlocksItsOwnRewardsFirst()
+        {
+            var progress = new BattlePassProgress(10, 100, level: 1, startPremium: 3);
+            progress.MarkClaimed(0, RewardTrack.Premium, 1);
+            var changes = Record(progress);
+
+            progress.UnlockPremium();
+
+            CollectionAssert.AreEqual(new[]
+            {
+                "0 Premium PremiumLocked>Claimable", "0 Premium #2 PremiumLocked>Claimable", "1 Premium PremiumLocked>Claimable",
+            }, changes);
+        }
+
         static List<string> Record(BattlePassProgress progress)
         {
             var log = new List<string>();
-            progress.RewardStateChanged += (level, track, from, to) => log.Add($"{level} {track} {from}>{to}");
+            progress.RewardStateChanged += (slot, from, to) => log.Add($"{slot} {from}>{to}");
             return log;
         }
     }

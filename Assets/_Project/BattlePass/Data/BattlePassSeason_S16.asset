@@ -17,364 +17,522 @@ MonoBehaviour:
   timeLeft: 17D 20H
   xpPerLevel: 200
   skipLevelCost: 20
-  levels:
-  - free:
-      displayName: GOLD
-      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
-      kind: 1
-      amount: 1000
+  start:
     premium:
-      displayName: CLEOPATRA
+    - displayName: CLEOPATRA
       icon: {fileID: 21300000, guid: 4adc6129c6f8e494ba6078acb8e7935b, type: 3}
       rarity: 5
       kind: 0
       amount: 1
+      caption: UNLOCK NOW
+      captionIcon: {fileID: 0}
+    - displayName: SOLARIS
+      icon: {fileID: 21300000, guid: 5525df76e19a82e45acbc69bf401ab46, type: 3}
+      rarity: 4
+      kind: 0
+      amount: 1
+      caption: UNLOCK NOW
+      captionIcon: {fileID: 0}
+    - displayName: CLEOPATRA
+      icon: {fileID: 21300000, guid: 4adc6129c6f8e494ba6078acb8e7935b, type: 3}
+      rarity: 5
+      kind: 0
+      amount: 2
+      caption: 
+      captionIcon: {fileID: 21300000, guid: b1c43be2aaa2e46409109ac137c75bf6, type: 3}
+    - displayName: SOLARIS
+      icon: {fileID: 21300000, guid: 5525df76e19a82e45acbc69bf401ab46, type: 3}
+      rarity: 4
+      kind: 0
+      amount: 2
+      caption: 
+      captionIcon: {fileID: 21300000, guid: b1c43be2aaa2e46409109ac137c75bf6, type: 3}
+    free:
+    - displayName: UNCOMMON CHEST
+      icon: {fileID: 21300000, guid: d088344e04ddfa547bee12331668013f, type: 3}
+      rarity: 1
+      kind: 0
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
+  levels:
+  - free:
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 2
+      kind: 1
+      amount: 1000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
+    premium:
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 4
+      kind: 1
+      amount: 5000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
   - free:
       displayName: DIAMOND
       icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
       rarity: 3
       kind: 2
       amount: 2
-    premium:
-      displayName: SOLARIS
-      icon: {fileID: 21300000, guid: 5525df76e19a82e45acbc69bf401ab46, type: 3}
-      rarity: 4
-      kind: 0
-      amount: 1
-  - free:
-      displayName: LUCKY GEM
-      icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
-      rarity: 1
-      kind: 0
-      amount: 2
-    premium:
-      displayName: GOLD
-      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
-      kind: 1
-      amount: 5000
-  - free:
-      displayName: UNCOMMON CHEST
-      icon: {fileID: 21300000, guid: d088344e04ddfa547bee12331668013f, type: 3}
-      rarity: 1
-      kind: 0
-      amount: 1
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
     premium:
       displayName: DIAMOND
       icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
       rarity: 3
       kind: 2
       amount: 10
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
   - free:
-      displayName: GOLD
-      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
-      kind: 1
-      amount: 1000
-    premium:
-      displayName: DYNAMITE
-      icon: {fileID: 21300000, guid: 2b9d60235d1320244982d989a7bf498b, type: 3}
-      rarity: 3
-      kind: 0
-      amount: 3
-  - free:
-      displayName: UNCOMMON PACK
-      icon: {fileID: 21300000, guid: 1ae8762b70c821d4c9be8aa4894e103f, type: 3}
+      displayName: LUCKY GEM
+      icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
       rarity: 1
       kind: 0
-      amount: 1
+      amount: 2
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 538db2c353c284f4fba5b3b73ad03355, type: 3}
     premium:
-      displayName: ATTACHMENT
-      icon: {fileID: 21300000, guid: 6763476f95ad1a641b95c1a61ff8e393, type: 3}
-      rarity: 2
+      displayName: LUCKY GEM
+      icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
+      rarity: 1
       kind: 0
-      amount: 1
+      amount: 10
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 538db2c353c284f4fba5b3b73ad03355, type: 3}
   - free:
       displayName: DIAMOND
       icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
       rarity: 3
       kind: 2
       amount: 2
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
+    premium:
+      displayName: DYNAMITE
+      icon: {fileID: 21300000, guid: 2b9d60235d1320244982d989a7bf498b, type: 3}
+      rarity: 3
+      kind: 0
+      amount: 1
+      caption: UNLOCK NOW
+      captionIcon: {fileID: 0}
+  - free:
+      displayName: UNCOMMON BOOSTER PACK
+      icon: {fileID: 21300000, guid: 1ae8762b70c821d4c9be8aa4894e103f, type: 3}
+      rarity: 1
+      kind: 0
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
+    premium:
+      displayName: SOLARIS MAG
+      icon: {fileID: 21300000, guid: 6763476f95ad1a641b95c1a61ff8e393, type: 3}
+      rarity: 1
+      kind: 0
+      amount: 1
+      caption: ATTACHMENT
+      captionIcon: {fileID: 0}
+  - free:
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 2
+      kind: 1
+      amount: 1000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
     premium:
       displayName: EPIC CHEST
       icon: {fileID: 21300000, guid: 0491cb812cfbc6648ab759d7813ec2cd, type: 3}
       rarity: 3
       kind: 0
       amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
+  - free:
+      displayName: DIAMOND
+      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
+      rarity: 3
+      kind: 2
+      amount: 2
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
+    premium:
+      displayName: RARE BOOSTER PACK
+      icon: {fileID: 21300000, guid: 1d77d062cfb001344a3b47526d481ccb, type: 3}
+      rarity: 2
+      kind: 0
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
   - free:
       displayName: LUCKY GEM
       icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
       rarity: 1
       kind: 0
       amount: 2
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 538db2c353c284f4fba5b3b73ad03355, type: 3}
     premium:
-      displayName: RARE PACK
-      icon: {fileID: 21300000, guid: 1d77d062cfb001344a3b47526d481ccb, type: 3}
+      displayName: DYNAMITE
+      icon: {fileID: 21300000, guid: 2b9d60235d1320244982d989a7bf498b, type: 3}
+      rarity: 3
+      kind: 0
+      amount: 2
+      caption: 
+      captionIcon: {fileID: 21300000, guid: b1c43be2aaa2e46409109ac137c75bf6, type: 3}
+  - free:
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
       rarity: 2
-      kind: 0
-      amount: 1
-  - free:
-      displayName: GOLD
-      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
       kind: 1
-      amount: 1500
+      amount: 1000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
     premium:
-      displayName: ANUBIS MASK
-      icon: {fileID: 21300000, guid: ab8baa881a01dff46aa245ca77501190, type: 3}
-      rarity: 3
+      displayName: CLEOPATRA
+      icon: {fileID: 21300000, guid: 4adc6129c6f8e494ba6078acb8e7935b, type: 3}
+      rarity: 5
       kind: 0
-      amount: 1
-  - free:
-      displayName: EPIC PACK
-      icon: {fileID: 21300000, guid: 972f9fe60fb7f964b859739cbd0ee5eb, type: 3}
-      rarity: 3
-      kind: 0
-      amount: 1
-    premium:
-      displayName: LEGENDARY CHEST
-      icon: {fileID: 21300000, guid: 3d19d52de06f61948a6fc0090409eb31, type: 3}
-      rarity: 4
-      kind: 0
-      amount: 1
-  - free:
-      displayName: DIAMOND
-      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
-      rarity: 3
-      kind: 2
       amount: 3
-    premium:
-      displayName: GOLD
-      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
-      kind: 1
-      amount: 7500
+      caption: 
+      captionIcon: {fileID: 21300000, guid: b1c43be2aaa2e46409109ac137c75bf6, type: 3}
   - free:
       displayName: UNCOMMON CHEST
       icon: {fileID: 21300000, guid: d088344e04ddfa547bee12331668013f, type: 3}
       rarity: 1
       kind: 0
       amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
     premium:
-      displayName: LUCKY GEM
-      icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
-      rarity: 2
+      displayName: EPIC CHEST
+      icon: {fileID: 21300000, guid: 0491cb812cfbc6648ab759d7813ec2cd, type: 3}
+      rarity: 3
       kind: 0
-      amount: 10
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
   - free:
       displayName: GOLD
       icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
+      rarity: 2
       kind: 1
-      amount: 2000
+      amount: 1500
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
     premium:
-      displayName: ABILITY
-      icon: {fileID: 21300000, guid: 83100731f37a5934cbcd44a30ac3ad09, type: 3}
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 4
+      kind: 1
+      amount: 6000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
+  - free:
+      displayName: DIAMOND
+      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
+      rarity: 3
+      kind: 2
+      amount: 3
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
+    premium:
+      displayName: DIAMOND
+      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
+      rarity: 3
+      kind: 2
+      amount: 12
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
+  - free:
+      displayName: LUCKY GEM
+      icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
+      rarity: 1
+      kind: 0
+      amount: 3
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 538db2c353c284f4fba5b3b73ad03355, type: 3}
+    premium:
+      displayName: ANUBIS MASK
+      icon: {fileID: 21300000, guid: ab8baa881a01dff46aa245ca77501190, type: 3}
       rarity: 4
       kind: 0
       amount: 1
+      caption: UNLOCK NOW
+      captionIcon: {fileID: 0}
   - free:
-      displayName: RARE PACK
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 2
+      kind: 1
+      amount: 1500
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
+    premium:
+      displayName: RARE BOOSTER PACK
       icon: {fileID: 21300000, guid: 1d77d062cfb001344a3b47526d481ccb, type: 3}
       rarity: 2
       kind: 0
       amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
+  - free:
+      displayName: UNCOMMON BOOSTER PACK
+      icon: {fileID: 21300000, guid: 1ae8762b70c821d4c9be8aa4894e103f, type: 3}
+      rarity: 1
+      kind: 0
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
+    premium:
+      displayName: LEGENDARY CHEST
+      icon: {fileID: 21300000, guid: 3d19d52de06f61948a6fc0090409eb31, type: 3}
+      rarity: 4
+      kind: 0
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
+  - free:
+      displayName: DIAMOND
+      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
+      rarity: 3
+      kind: 2
+      amount: 3
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
+    premium:
+      displayName: SOLARIS
+      icon: {fileID: 21300000, guid: 5525df76e19a82e45acbc69bf401ab46, type: 3}
+      rarity: 4
+      kind: 0
+      amount: 3
+      caption: 
+      captionIcon: {fileID: 21300000, guid: b1c43be2aaa2e46409109ac137c75bf6, type: 3}
+  - free:
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 2
+      kind: 1
+      amount: 2000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
+    premium:
+      displayName: LUCKY GEM
+      icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
+      rarity: 1
+      kind: 0
+      amount: 15
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 538db2c353c284f4fba5b3b73ad03355, type: 3}
+  - free:
+      displayName: UNCOMMON CHEST
+      icon: {fileID: 21300000, guid: d088344e04ddfa547bee12331668013f, type: 3}
+      rarity: 1
+      kind: 0
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
+    premium:
+      displayName: EPIC CARD PACK
+      icon: {fileID: 21300000, guid: 972f9fe60fb7f964b859739cbd0ee5eb, type: 3}
+      rarity: 3
+      kind: 0
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
+  - free:
+      displayName: LUCKY GEM
+      icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
+      rarity: 1
+      kind: 0
+      amount: 3
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 538db2c353c284f4fba5b3b73ad03355, type: 3}
+    premium:
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 4
+      kind: 1
+      amount: 8000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
+  - free:
+      displayName: DIAMOND
+      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
+      rarity: 3
+      kind: 2
+      amount: 4
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
+    premium:
+      displayName: ABILITY
+      icon: {fileID: 21300000, guid: 83100731f37a5934cbcd44a30ac3ad09, type: 3}
+      rarity: 3
+      kind: 0
+      amount: 1
+      caption: UNLOCK NOW
+      captionIcon: {fileID: 0}
+  - free:
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 2
+      kind: 1
+      amount: 2000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
+    premium:
+      displayName: DYNAMITE
+      icon: {fileID: 21300000, guid: 2b9d60235d1320244982d989a7bf498b, type: 3}
+      rarity: 3
+      kind: 0
+      amount: 3
+      caption: 
+      captionIcon: {fileID: 21300000, guid: b1c43be2aaa2e46409109ac137c75bf6, type: 3}
+  - free:
+      displayName: RARE BOOSTER PACK
+      icon: {fileID: 21300000, guid: 1d77d062cfb001344a3b47526d481ccb, type: 3}
+      rarity: 2
+      kind: 0
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
     premium:
       displayName: DIAMOND
       icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
       rarity: 3
       kind: 2
       amount: 15
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
   - free:
       displayName: LUCKY GEM
       icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
       rarity: 1
       kind: 0
-      amount: 3
-    premium:
-      displayName: EPIC PACK
-      icon: {fileID: 21300000, guid: 972f9fe60fb7f964b859739cbd0ee5eb, type: 3}
-      rarity: 3
-      kind: 0
-      amount: 1
-  - free:
-      displayName: DIAMOND
-      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
-      rarity: 3
-      kind: 2
-      amount: 3
-    premium:
-      displayName: DYNAMITE
-      icon: {fileID: 21300000, guid: 2b9d60235d1320244982d989a7bf498b, type: 3}
-      rarity: 3
-      kind: 0
-      amount: 5
-  - free:
-      displayName: GOLD
-      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
-      kind: 1
-      amount: 2000
-    premium:
-      displayName: RARE PACK
-      icon: {fileID: 21300000, guid: 1d77d062cfb001344a3b47526d481ccb, type: 3}
-      rarity: 2
-      kind: 0
-      amount: 2
-  - free:
-      displayName: UNCOMMON PACK
-      icon: {fileID: 21300000, guid: 1ae8762b70c821d4c9be8aa4894e103f, type: 3}
-      rarity: 1
-      kind: 0
-      amount: 1
-    premium:
-      displayName: EPIC CHEST
-      icon: {fileID: 21300000, guid: 0491cb812cfbc6648ab759d7813ec2cd, type: 3}
-      rarity: 3
-      kind: 0
-      amount: 1
-  - free:
-      displayName: DIAMOND
-      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
-      rarity: 3
-      kind: 2
       amount: 4
-    premium:
-      displayName: GOLD
-      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
-      kind: 1
-      amount: 10000
-  - free:
-      displayName: EPIC CHEST
-      icon: {fileID: 21300000, guid: 0491cb812cfbc6648ab759d7813ec2cd, type: 3}
-      rarity: 3
-      kind: 0
-      amount: 1
-    premium:
-      displayName: LEGENDARY CHEST
-      icon: {fileID: 21300000, guid: 3d19d52de06f61948a6fc0090409eb31, type: 3}
-      rarity: 4
-      kind: 0
-      amount: 1
-  - free:
-      displayName: GOLD
-      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
-      kind: 1
-      amount: 2500
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 538db2c353c284f4fba5b3b73ad03355, type: 3}
     premium:
       displayName: ANUBIS MASK
       icon: {fileID: 21300000, guid: ab8baa881a01dff46aa245ca77501190, type: 3}
+      rarity: 4
+      kind: 0
+      amount: 2
+      caption: 
+      captionIcon: {fileID: 21300000, guid: b1c43be2aaa2e46409109ac137c75bf6, type: 3}
+  - free:
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 2
+      kind: 1
+      amount: 2500
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
+    premium:
+      displayName: EPIC CHEST
+      icon: {fileID: 21300000, guid: 0491cb812cfbc6648ab759d7813ec2cd, type: 3}
       rarity: 3
       kind: 0
       amount: 1
-  - free:
-      displayName: LUCKY GEM
-      icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
-      rarity: 1
-      kind: 0
-      amount: 4
-    premium:
-      displayName: DIAMOND
-      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
-      rarity: 3
-      kind: 2
-      amount: 20
-  - free:
-      displayName: RARE PACK
-      icon: {fileID: 21300000, guid: 1d77d062cfb001344a3b47526d481ccb, type: 3}
-      rarity: 2
-      kind: 0
-      amount: 1
-    premium:
-      displayName: ATTACHMENT
-      icon: {fileID: 21300000, guid: 6763476f95ad1a641b95c1a61ff8e393, type: 3}
-      rarity: 2
-      kind: 0
-      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
   - free:
       displayName: DIAMOND
       icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
       rarity: 3
       kind: 2
       amount: 5
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
     premium:
-      displayName: EPIC PACK
-      icon: {fileID: 21300000, guid: 972f9fe60fb7f964b859739cbd0ee5eb, type: 3}
-      rarity: 3
-      kind: 0
-      amount: 2
+      displayName: GOLD
+      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
+      rarity: 4
+      kind: 1
+      amount: 10000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
   - free:
       displayName: UNCOMMON CHEST
       icon: {fileID: 21300000, guid: d088344e04ddfa547bee12331668013f, type: 3}
       rarity: 1
       kind: 0
       amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
     premium:
-      displayName: GOLD
-      icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
-      kind: 1
-      amount: 15000
+      displayName: RARE BOOSTER PACK
+      icon: {fileID: 21300000, guid: 1d77d062cfb001344a3b47526d481ccb, type: 3}
+      rarity: 2
+      kind: 0
+      amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
   - free:
       displayName: GOLD
       icon: {fileID: 21300000, guid: 3f24fde8aab9d3346bcd8f3675c7b5a4, type: 3}
-      rarity: 0
+      rarity: 2
       kind: 1
       amount: 3000
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 54749bb1279ff6744bbf31bc930fdd75, type: 3}
     premium:
-      displayName: DYNAMITE
-      icon: {fileID: 21300000, guid: 2b9d60235d1320244982d989a7bf498b, type: 3}
-      rarity: 3
+      displayName: CLEOPATRA
+      icon: {fileID: 21300000, guid: 4adc6129c6f8e494ba6078acb8e7935b, type: 3}
+      rarity: 5
       kind: 0
-      amount: 8
+      amount: 5
+      caption: 
+      captionIcon: {fileID: 21300000, guid: b1c43be2aaa2e46409109ac137c75bf6, type: 3}
   - free:
       displayName: LUCKY GEM
       icon: {fileID: 21300000, guid: 3a1f10f3403c3724e8c57b422b77f26c, type: 3}
       rarity: 1
       kind: 0
       amount: 5
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 538db2c353c284f4fba5b3b73ad03355, type: 3}
     premium:
       displayName: LEGENDARY CHEST
       icon: {fileID: 21300000, guid: 3d19d52de06f61948a6fc0090409eb31, type: 3}
       rarity: 4
       kind: 0
       amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
   - free:
-      displayName: EPIC PACK
+      displayName: EPIC CARD PACK
       icon: {fileID: 21300000, guid: 972f9fe60fb7f964b859739cbd0ee5eb, type: 3}
       rarity: 3
       kind: 0
       amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
     premium:
       displayName: DIAMOND
       icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
       rarity: 3
       kind: 2
-      amount: 30
-  - free:
-      displayName: DIAMOND
-      icon: {fileID: 21300000, guid: 5f83699b715d21b45b284a47613a0bd7, type: 3}
-      rarity: 3
-      kind: 2
-      amount: 6
-    premium:
-      displayName: ABILITY
-      icon: {fileID: 21300000, guid: 83100731f37a5934cbcd44a30ac3ad09, type: 3}
-      rarity: 4
-      kind: 0
-      amount: 1
+      amount: 25
+      caption: 
+      captionIcon: {fileID: 21300000, guid: 57861f7bb9d74c1449dcc50fb868e937, type: 3}
   - free:
       displayName: LEGENDARY CHEST
       icon: {fileID: 21300000, guid: 3d19d52de06f61948a6fc0090409eb31, type: 3}
       rarity: 4
       kind: 0
       amount: 1
+      caption: 
+      captionIcon: {fileID: 0}
     premium:
       displayName: SOLARIS
       icon: {fileID: 21300000, guid: 5525df76e19a82e45acbc69bf401ab46, type: 3}
       rarity: 4
       kind: 0
-      amount: 1
+      amount: 5
+      caption: 
+      captionIcon: {fileID: 21300000, guid: b1c43be2aaa2e46409109ac137c75bf6, type: 3}

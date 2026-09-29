@@ -17,10 +17,11 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
 ### What to test
 
-- Drag the road, or use the mouse wheel, to scroll through the 30 levels. The screen opens by gliding to the player's progress.
+- The screen opens where the road starts, as in the reference: the rewards that come with the pass itself, the pass ticket on the track and a free chest under it. It then glides to the player's progress.
+- Drag the road, or use the mouse wheel, to scroll through the 30 levels. While the progress is out of view, a tag at the edge of the road points at it with the level being worked on; tap it to scroll back.
 - Tap a reward with a red **!** to claim it. Coins and gems fly into the wallet.
 - Tap any other reward to see what it is and what unlocks it.
-- Press **GET** on the season card to buy the premium pass: the reached premium rewards unlock in a wave from left to right.
+- Press **GET** on the season card to buy the premium pass: the pass's own rewards and the reached premium rewards unlock in a wave from left to right.
 - Press the green **💎 20** button on the progress bar to buy the next level.
 - Press **P** to play a scripted walkthrough of all of the above (it taps through the real pointer events and shows a ring where each tap lands).
 - Press **R** to restart the scene.
@@ -29,17 +30,18 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
 | State | How it reads |
 |---|---|
-| Locked | Level not reached yet: desaturated, dimmed card. |
-| Premium | Top row. Without the pass it carries a padlock; reached levels say **UNLOCK NOW**. |
-| Unlocked | The moment a reward becomes available it flashes, breaks its padlock, and fires light rays and sparkles. |
+| Locked | Level not reached yet: the reward sits on its rarity's card, slightly dimmed, beyond the progress line. |
+| Unlocked | A reached reward switches to the gold collectable card, as in the reference. The moment it becomes available it flashes, breaks its padlock, and fires light rays and sparkles. |
+| Premium | Top row, plus the pass's own rewards at the start of the road. Without the pass a reached premium reward shows the padlock and a still **!** badge. |
 | Claimable | Red **!** badge with a gentle bob, a soft glow pulse and an occasional shine sweep, each card out of phase with its neighbours. |
 | Claimed | Grey card with a green check. Claiming punches the card with a flash, a particle burst and a shockwave ring. |
-| Current progress | Filled track, a lighter band behind the reached levels, a pulsing ring on the next level and the skip-level button at the head of the fill. |
+| Current progress | Filled track, a lighter band behind the reached levels, a pulsing ring on the next level, the skip-level button at the head of the fill, and the jump tag while the progress is out of view. |
 
 ### Technical notes
 
 - **One UI material for the whole road.** `UIFx.shader` reads per-element parameters (state grading, flash, idle intensity, phase and effect flags) from UV1/UV2, written by `UIFxMeshEffect`, so every element can still batch. The idle loops (shine, pulse, bob, the season card's gold statue cycle) run on `_Time`: an idle screen costs no CPU and never rebuilds a canvas. Premultiplied alpha lets additive glows share the batch with alpha-blended cards.
-- **Sprite atlases.** Two atlases, one for UI chrome and one for reward renders, took the idle screen from 83 to 30 draw calls. Tiled, rotated and particle textures stay unpacked.
+- **Sprite atlases.** Two atlases, one for UI chrome and one for reward renders, took the idle screen from 83 to 29 draw calls. Tiled, rotated and particle textures stay unpacked.
+- **The start of the road.** The season data has a level 0 for what the pass itself grants, which can hold several rewards per track. The road lays these out before level 1, with the pass ticket as their track marker.
 - **Overdraw.** The background is the camera clear colour plus a single tiled pattern layer. Invisible hit areas use a raycast-only graphic that submits no geometry.
 - **Particles.** Claim and unlock bursts are pooled, so claiming never instantiates anything. They use a minimal additive URP shader and existing small textures. The flying currency icons live on a nested canvas, so they don't rebuild the road's batches while they move.
 - **Textures.** UI sprites have no mipmaps. The UI atlas uses ASTC 4×4 and the reward atlas ASTC 6×6. Soft glows use ASTC 8×8 capped at 512 px.

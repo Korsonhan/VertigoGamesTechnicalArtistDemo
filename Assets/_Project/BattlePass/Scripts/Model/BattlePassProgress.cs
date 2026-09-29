@@ -16,18 +16,44 @@ namespace VertigoDemo.BattlePass
     }
 
     /// <summary>
+    /// Where a reward sits on the road. Level 0 is the start of the road, before the first level, and
+    /// can hold several rewards on each track; every other level holds one, at index 0.
+    /// </summary>
+    public readonly struct RewardSlot : IEquatable<RewardSlot>
+    {
+        public readonly int Level;
+        public readonly RewardTrack Track;
+        public readonly int Index;
+
+        public RewardSlot(int level, RewardTrack track, int index = 0)
+        {
+            Level = level;
+            Track = track;
+            Index = index;
+        }
+
+        public bool Equals(RewardSlot other) => Level == other.Level && Track == other.Track && Index == other.Index;
+
+        public override bool Equals(object obj) => obj is RewardSlot other && Equals(other);
+
+        public override int GetHashCode() => HashCode.Combine(Level, Track, Index);
+
+        public override string ToString() => Index == 0 ? $"{Level} {Track}" : $"{Level} {Track} #{Index}";
+    }
+
+    /// <summary>
     /// A player's progress through one season. Plain C# with no Unity dependencies,
     /// so the rules can be unit tested and the views only react to its events.
     /// </summary>
     public sealed class BattlePassProgress
     {
-        readonly bool[] claimedFree;
-        readonly bool[] claimedPremium;
+        readonly bool[][] claimedFree;
+        readonly bool[][] claimedPremium;
 
         public int LevelCount { get; }
         public int XpPerLevel { get; }
 
-        /// <summary>Highest level reached; 0 before the first level.</summary>
+        /// <summary>Highest level reached; 0 at the start of the road, whose rewards are always within reach.</summary>
         public int Level { get; private set; }
 
         /// <summary>Experience collected towards <see cref="Level"/> + 1.</summary>
@@ -37,46 +63,57 @@ namespace VertigoDemo.BattlePass
         public bool IsMaxLevel => Level >= LevelCount;
         public float LevelFraction => IsMaxLevel ? 0f : (float)Xp / XpPerLevel;
 
-        /// <summary>Raised for every reward whose state changes: level, track, previous state, new state.</summary>
-        public event Action<int, RewardTrack, RewardState, RewardState> RewardStateChanged;
+        /// <summary>Raised for every reward whose state changes: where it is, previous state, new state.</summary>
+        public event Action<RewardSlot, RewardState, RewardState> RewardStateChanged;
 
-        public BattlePassProgress(int levelCount, int xpPerLevel, int level = 0, int xp = 0, bool premiumOwned = false)
+        /// <param name="startPremium">Premium rewards at level 0, which come with the pass itself.</param>
+        /// <param name="startFree">Free rewards at level 0, ready from the start.</param>
+        public BattlePassProgress(int levelCount, int xpPerLevel, int level = 0, int xp = 0, bool premiumOwned = false,
+            int startPremium = 0, int startFree = 0)
         {
             if (levelCount <= 0) throw new ArgumentOutOfRangeException(nameof(levelCount));
             if (xpPerLevel <= 0) throw new ArgumentOutOfRangeException(nameof(xpPerLevel));
+            if (startPremium < 0) throw new ArgumentOutOfRangeException(nameof(startPremium));
+            if (startFree < 0) throw new ArgumentOutOfRangeException(nameof(startFree));
 
             LevelCount = levelCount;
             XpPerLevel = xpPerLevel;
             Level = Math.Clamp(level, 0, levelCount);
             Xp = IsMaxLevel ? 0 : Math.Clamp(xp, 0, xpPerLevel - 1);
             PremiumOwned = premiumOwned;
-            claimedFree = new bool[levelCount];
-            claimedPremium = new bool[levelCount];
+            claimedFree = NewClaimedFlags(levelCount, startFree);
+            claimedPremium = NewClaimedFlags(levelCount, startPremium);
         }
 
-        public RewardState GetState(int level, RewardTrack track)
+        public int RewardCount(int level, RewardTrack track) => Claimed(track)[level].Length;
+
+        public RewardState GetState(int level, RewardTrack track, int index = 0) => GetState(new RewardSlot(level, track, index));
+
+        public RewardState GetState(RewardSlot slot)
         {
-            if (level > Level)
+            if (slot.Level > Level)
                 return RewardState.Locked;
-            if (IsClaimed(level, track))
+            if (IsClaimed(slot))
                 return RewardState.Claimed;
-            if (track == RewardTrack.Premium && !PremiumOwned)
+            if (slot.Track == RewardTrack.Premium && !PremiumOwned)
                 return RewardState.PremiumLocked;
             return RewardState.Claimable;
         }
 
-        public bool IsClaimed(int level, RewardTrack track) => Claimed(track)[level - 1];
+        public bool IsClaimed(RewardSlot slot) => Claimed(slot.Track)[slot.Level][slot.Index];
 
         /// <summary>Sets up an already claimed reward without raising events (initial placeholder state).</summary>
-        public void MarkClaimed(int level, RewardTrack track) => Claimed(track)[level - 1] = true;
+        public void MarkClaimed(int level, RewardTrack track, int index = 0) => Claimed(track)[level][index] = true;
 
-        public bool TryClaim(int level, RewardTrack track)
+        public bool TryClaim(int level, RewardTrack track, int index = 0) => TryClaim(new RewardSlot(level, track, index));
+
+        public bool TryClaim(RewardSlot slot)
         {
-            if (GetState(level, track) != RewardState.Claimable)
+            if (GetState(slot) != RewardState.Claimable)
                 return false;
 
-            Claimed(track)[level - 1] = true;
-            RewardStateChanged?.Invoke(level, track, RewardState.Claimable, RewardState.Claimed);
+            Claimed(slot.Track)[slot.Level][slot.Index] = true;
+            RewardStateChanged?.Invoke(slot, RewardState.Claimable, RewardState.Claimed);
             return true;
         }
 
@@ -113,26 +150,42 @@ namespace VertigoDemo.BattlePass
             return true;
         }
 
+        /// <summary>Unlocks every reached premium reward, starting with those that come with the pass itself.</summary>
         public bool UnlockPremium()
         {
             if (PremiumOwned)
                 return false;
 
             PremiumOwned = true;
-            for (int level = 1; level <= Level; level++)
+            for (int level = 0; level <= Level; level++)
             {
-                if (!IsClaimed(level, RewardTrack.Premium))
-                    RewardStateChanged?.Invoke(level, RewardTrack.Premium, RewardState.PremiumLocked, RewardState.Claimable);
+                for (int index = 0; index < RewardCount(level, RewardTrack.Premium); index++)
+                {
+                    var slot = new RewardSlot(level, RewardTrack.Premium, index);
+                    if (!IsClaimed(slot))
+                        RewardStateChanged?.Invoke(slot, RewardState.PremiumLocked, RewardState.Claimable);
+                }
             }
             return true;
         }
 
         void NotifyLevelReached(int level)
         {
-            RewardStateChanged?.Invoke(level, RewardTrack.Free, RewardState.Locked, GetState(level, RewardTrack.Free));
-            RewardStateChanged?.Invoke(level, RewardTrack.Premium, RewardState.Locked, GetState(level, RewardTrack.Premium));
+            var free = new RewardSlot(level, RewardTrack.Free);
+            var premium = new RewardSlot(level, RewardTrack.Premium);
+            RewardStateChanged?.Invoke(free, RewardState.Locked, GetState(free));
+            RewardStateChanged?.Invoke(premium, RewardState.Locked, GetState(premium));
         }
 
-        bool[] Claimed(RewardTrack track) => track == RewardTrack.Free ? claimedFree : claimedPremium;
+        static bool[][] NewClaimedFlags(int levelCount, int startRewards)
+        {
+            var flags = new bool[levelCount + 1][];
+            flags[0] = new bool[startRewards];
+            for (int level = 1; level <= levelCount; level++)
+                flags[level] = new bool[1];
+            return flags;
+        }
+
+        bool[][] Claimed(RewardTrack track) => track == RewardTrack.Free ? claimedFree : claimedPremium;
     }
 }

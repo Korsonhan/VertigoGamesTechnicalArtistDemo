@@ -12,16 +12,18 @@ namespace VertigoDemo.BattlePass.UI
     /// One reward slot on the road. Applies the look of each state and plays the one-shot
     /// transitions between them; the looping idle effects (shine, glow pulse, badge bob) run in
     /// the UIFx shader, so an idle claimable card costs nothing on the CPU.
+    /// Like the reference, a reward shows its rarity's card until its level is reached and the shared
+    /// collectable card from then on.
     /// </summary>
     public sealed class RewardCardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
     {
-        const float LockedSaturation = 0.3f;
-        const float LockedBrightness = 0.58f;
-        const float PremiumLockedBrightness = 0.9f;
+        const float LockedSaturation = 0.9f;
+        const float LockedBrightness = 0.8f;
         const float ClaimedSaturation = 0.2f;
         const float ClaimedBrightness = 0.55f;
         const float GlowAlpha = 0.75f;
         const float RaysAlpha = 0.85f;
+        const float CaptionIconGap = 6f;
         static readonly Color DimTextColor = new Color(0.78f, 0.78f, 0.84f, 0.9f);
 
         [Header("Parts")]
@@ -30,6 +32,7 @@ namespace VertigoDemo.BattlePass.UI
         [SerializeField] Image icon;
         [SerializeField] TMP_Text title;
         [SerializeField] TMP_Text caption;
+        [SerializeField] Image captionIcon;
         [SerializeField] Image lockBadge;
         [SerializeField] Image alertBadge;
         [SerializeField] Image claimedMark;
@@ -45,19 +48,21 @@ namespace VertigoDemo.BattlePass.UI
 
         [Header("Text")]
         [SerializeField] Color textColor = Color.white;
-        [SerializeField] Color unlockNowColor = new Color(1f, 0.86f, 0.3f);
 
         public event Action<RewardCardView> Clicked;
         /// <summary>Raised when the unlock transition starts, so the screen can fire its particle burst.</summary>
         public event Action<RewardCardView> Unlocked;
 
-        public int Level { get; private set; }
-        public RewardTrack Track { get; private set; }
+        public RewardSlot Slot { get; private set; }
+        public int Level => Slot.Level;
+        public RewardTrack Track => Slot.Track;
         public RewardDefinition Reward { get; private set; }
         public RewardState State { get; private set; }
         public Color Accent { get; private set; }
         public RectTransform Body => body;
 
+        Sprite rarityCard;
+        Sprite collectableCard;
         bool premiumOwned;
         float pressScale = 1f;
         float punchScale = 1f;
@@ -65,17 +70,19 @@ namespace VertigoDemo.BattlePass.UI
         Coroutine raysRoutine;
         Coroutine pressRoutine;
 
-        public void Bind(int level, RewardTrack track, RewardDefinition reward, RarityPalette palette, float phase)
+        public void Bind(RewardSlot slot, RewardDefinition reward, RarityPalette palette, float phase)
         {
-            Level = level;
-            Track = track;
+            Slot = slot;
             Reward = reward;
 
             var style = palette.Get(reward.rarity);
             Accent = style.accent;
-            background.sprite = style.cardSprite;
+            rarityCard = style.cardSprite;
+            collectableCard = palette.CollectableCard;
+            background.sprite = rarityCard;
             icon.sprite = reward.icon;
             title.text = reward.displayName;
+            captionIcon.sprite = reward.captionIcon;
 
             var glowColor = Color.Lerp(style.accent, Color.white, 0.25f);
             glowColor.a = glow.color.a;
@@ -94,10 +101,10 @@ namespace VertigoDemo.BattlePass.UI
             State = state;
             premiumOwned = ownsPremium;
 
+            background.sprite = state == RewardState.Locked ? rarityCard : collectableCard;
             switch (state)
             {
                 case RewardState.Locked: SetGrade(LockedSaturation, LockedBrightness); break;
-                case RewardState.PremiumLocked: SetGrade(1f, PremiumLockedBrightness); break;
                 case RewardState.Claimed: SetGrade(ClaimedSaturation, ClaimedBrightness); break;
                 default: SetGrade(1f, 1f); break;
             }
@@ -106,7 +113,7 @@ namespace VertigoDemo.BattlePass.UI
             punchScale = 1f;
             ApplyScale();
             ResetBadge(lockBadge, NeedsLock(state));
-            ResetBadge(alertBadge, state == RewardState.Claimable);
+            ResetBadge(alertBadge, ShowsAlert(state));
             ResetBadge(claimedMark, state == RewardState.Claimed);
             glow.gameObject.SetActive(state == RewardState.Claimable);
             SetAlpha(glow, GlowAlpha);
@@ -168,6 +175,8 @@ namespace VertigoDemo.BattlePass.UI
             float fromSaturation = backgroundFx.Saturation;
             float fromBrightness = backgroundFx.Brightness;
             bool hadLock = lockBadge.gameObject.activeSelf;
+            // The card turns collectable under the opening flash, so the swap never shows.
+            background.sprite = collectableCard;
             raysRoutine = StartCoroutine(RaysRoutine());
 
             // Flash, pop and bring the colour back while the padlock breaks away.
@@ -232,18 +241,23 @@ namespace VertigoDemo.BattlePass.UI
             transition = null;
         }
 
-        // Level reached but the reward needs the premium pass: brighten, and nudge the padlock to explain why.
+        // Level reached but the reward needs the premium pass: the card turns collectable under a flash,
+        // the padlock nudges to explain why, and the badge pops in to say there is something to get.
         IEnumerator ReachRoutine(float delay)
         {
             yield return Tween.Wait(delay);
 
             float fromSaturation = backgroundFx.Saturation;
             float fromBrightness = backgroundFx.Brightness;
+            background.sprite = collectableCard;
+            ResetBadge(alertBadge, true);
             yield return Tween.Run(0.45f, t =>
             {
-                SetGrade(Mathf.Lerp(fromSaturation, 1f, t), Mathf.Lerp(fromBrightness, PremiumLockedBrightness, t));
-                SetFlash(0.4f * Ease.Bump(t));
+                float eased = Ease.OutCubic(t);
+                SetGrade(Mathf.Lerp(fromSaturation, 1f, eased), Mathf.Lerp(fromBrightness, 1f, eased));
+                SetFlash(0.6f * (1f - eased));
                 lockBadge.rectTransform.localScale = Vector3.one * (1f + 0.35f * Ease.Bump(t));
+                alertBadge.rectTransform.localScale = Vector3.one * Ease.OutBack(t);
             });
             RefreshTexts();
             transition = null;
@@ -281,28 +295,39 @@ namespace VertigoDemo.BattlePass.UI
 
         void RefreshTexts()
         {
-            bool dimmed = State == RewardState.Locked || State == RewardState.Claimed;
-            title.color = dimmed ? DimTextColor : textColor;
+            bool claimed = State == RewardState.Claimed;
+            title.color = claimed ? DimTextColor : textColor;
+            caption.text = claimed ? "CLAIMED" : Reward.CaptionText;
+            caption.color = claimed ? DimTextColor : textColor;
+            LayoutCaption(!claimed && Reward.ShowsCaptionIcon);
+        }
 
-            switch (State)
+        // Centres the icon and the number together as one group under the reward.
+        void LayoutCaption(bool showIcon)
+        {
+            captionIcon.gameObject.SetActive(showIcon);
+            var captionRect = caption.rectTransform;
+            if (!showIcon)
             {
-                case RewardState.PremiumLocked:
-                    caption.text = "UNLOCK NOW";
-                    caption.color = unlockNowColor;
-                    break;
-                case RewardState.Claimed:
-                    caption.text = "CLAIMED";
-                    caption.color = DimTextColor;
-                    break;
-                default:
-                    caption.text = Reward.AmountLabel;
-                    caption.color = dimmed ? DimTextColor : textColor;
-                    break;
+                captionRect.anchoredPosition = new Vector2(0f, captionRect.anchoredPosition.y);
+                return;
             }
+
+            var iconRect = captionIcon.rectTransform;
+            float iconSize = iconRect.rect.height;
+            iconRect.sizeDelta = new Vector2(iconSize, iconRect.sizeDelta.y);
+            float textWidth = caption.GetPreferredValues(caption.text).x;
+            captionRect.anchoredPosition = new Vector2((iconSize + CaptionIconGap) * 0.5f, captionRect.anchoredPosition.y);
+            iconRect.anchoredPosition = new Vector2(-(textWidth + CaptionIconGap) * 0.5f, iconRect.anchoredPosition.y);
         }
 
         bool NeedsLock(RewardState state) =>
             Track == RewardTrack.Premium && !premiumOwned && state != RewardState.Claimed;
+
+        // Reached rewards carry the badge whether or not they can be claimed yet, like the reference;
+        // only claimable ones bob, glow and shine.
+        static bool ShowsAlert(RewardState state) =>
+            state == RewardState.Claimable || state == RewardState.PremiumLocked;
 
         void StopTransition()
         {

@@ -38,9 +38,19 @@ namespace VertigoDemo.BattlePass.UI
         {
             IsPlaying = true;
             IsFinished = false;
-            yield return Tween.Wait(2f);
 
-            // Free rewards waiting to be claimed.
+            // Start where the road starts: claim the free chest under the pass ticket and look at what
+            // comes with the pass.
+            screen.ScrollToStart();
+            yield return Tween.Wait(1.4f);
+            yield return Tap(screen.GetCard(0, RewardTrack.Free));
+            yield return Tween.Wait(1.4f);
+            yield return Tap(screen.GetCard(0, RewardTrack.Premium));
+            yield return Tween.Wait(1.8f);
+
+            // Back to the player's progress with the jump button, and claim the free rewards waiting there.
+            yield return Tap(screen.JumpButton);
+            yield return Tween.Wait(1.2f);
             yield return Tap(screen.GetCard(2, RewardTrack.Free));
             yield return Tween.Wait(1.6f);
             yield return Tap(screen.GetCard(3, RewardTrack.Free));
@@ -50,19 +60,23 @@ namespace VertigoDemo.BattlePass.UI
             yield return Tap(screen.GetCard(5, RewardTrack.Premium));
             yield return Tween.Wait(1.8f);
 
-            // Buy the premium pass, then claim what it unlocked.
+            // Buy the premium pass: everything reached unlocks in a wave, the pass's own rewards included.
             yield return Tap(screen.PremiumButton);
             yield return Tween.Wait(2.6f);
             yield return Tap(screen.GetCard(3, RewardTrack.Premium));
-            yield return Tween.Wait(1.8f);
-            screen.ScrollToLevel(1);
-            yield return Tween.Wait(1.2f);
-            yield return Tap(screen.GetCard(1, RewardTrack.Premium));
             yield return Tween.Wait(1.6f);
-            yield return Tap(screen.GetCard(2, RewardTrack.Premium));
+            screen.ScrollToStart();
+            yield return Tween.Wait(1.2f);
+            yield return Tap(screen.GetCard(0, RewardTrack.Premium, 0));
+            yield return Tween.Wait(1.6f);
+            yield return Tap(screen.GetCard(0, RewardTrack.Premium, 1));
             yield return Tween.Wait(1.4f);
+            yield return Tap(screen.GetCard(1, RewardTrack.Premium));
+            yield return Tween.Wait(1.8f);
 
             // Buy two levels with gems and claim along the way.
+            yield return Tap(screen.JumpButton);
+            yield return Tween.Wait(1.2f);
             yield return Tap(screen.SkipLevelButton);
             yield return Tween.Wait(2.2f);
             yield return Tap(screen.GetCard(4, RewardTrack.Free));
@@ -74,10 +88,10 @@ namespace VertigoDemo.BattlePass.UI
             yield return Tap(screen.GetCard(5, RewardTrack.Premium));
             yield return Tween.Wait(1.4f);
 
-            // Peek at the rest of the season, then return to the player's progress.
+            // Peek at the rest of the season, then jump back to the player's progress.
             screen.ScrollToLevel(14);
             yield return Tween.Wait(2.2f);
-            screen.ScrollToProgress();
+            yield return Tap(screen.JumpButton);
             yield return Tween.Wait(2f);
 
             IsPlaying = false;

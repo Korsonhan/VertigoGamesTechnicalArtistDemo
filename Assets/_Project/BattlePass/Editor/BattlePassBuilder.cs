@@ -44,6 +44,7 @@ namespace VertigoDemo.BattlePass.EditorTools
             "ui_item_square_24px", "ui_item_square_shadow_32px", "ui_item_frame_thick_16px", "ui_item_frame_thin_16px",
             "ui_item_arrow_01_bottom", "ui_item_arrow_01_top", "ui_battle_pass_flag_red", "ui_img_battle_pass_offer_discount_bg",
             "ui_event_pass_collectable", "ui_card_uncommon", "ui_card_rare", "ui_card_epic", "ui_card_legendary", "ui_card_mythic",
+            "ui_button_battlepass_indicator_white", "ui_icon_generic_cards", "ui_icon_currency_lucky_draw_0",
         };
 
         static readonly string[] RewardAtlasSprites =
@@ -160,6 +161,7 @@ namespace VertigoDemo.BattlePass.EditorTools
             };
 
             var serialized = new SerializedObject(palette);
+            serialized.FindProperty("collectableCard").objectReferenceValue = Sprite("ui_event_pass_collectable");
             var array = serialized.FindProperty("entries");
             array.arraySize = entries.Length;
             for (int i = 0; i < entries.Length; i++)
@@ -182,60 +184,86 @@ namespace VertigoDemo.BattlePass.EditorTools
             season.xpPerLevel = 200;
             season.skipLevelCost = 20;
 
-            RewardDefinition Reward(string name, string icon, RewardRarity rarity, RewardKind kind, int amount) =>
-                new RewardDefinition { displayName = name, icon = Sprite(icon), rarity = rarity, kind = kind, amount = amount };
-            RewardDefinition Gold(int amount) => Reward("GOLD", "ui_icon_currency_soft_1", RewardRarity.Common, RewardKind.Coins, amount);
-            RewardDefinition Diamond(int amount) => Reward("DIAMOND", "ui_icon_currency_hard_1", RewardRarity.Epic, RewardKind.Gems, amount);
-            RewardDefinition LuckyGem(int amount, RewardRarity rarity = RewardRarity.Uncommon) =>
-                Reward("LUCKY GEM", "ui_icon_currency_lucky_draw_1_1", rarity, RewardKind.Item, amount);
-            RewardDefinition Item(string name, string icon, RewardRarity rarity, int amount = 1) =>
-                Reward(name, icon, rarity, RewardKind.Item, amount);
+            RewardDefinition Reward(string name, string icon, RewardRarity rarity, RewardKind kind, int amount,
+                string captionIcon = null, string caption = "") =>
+                new RewardDefinition
+                {
+                    displayName = name, icon = Sprite(icon), rarity = rarity, kind = kind, amount = amount,
+                    captionIcon = captionIcon != null ? Sprite(captionIcon) : null, caption = caption,
+                };
+            // Amounts carry their small icon, like the reference; big piles of gold get the legendary card.
+            RewardDefinition Gold(int amount) =>
+                Reward("GOLD", "ui_icon_currency_soft_1", amount >= 5000 ? RewardRarity.Legendary : RewardRarity.Rare, RewardKind.Coins, amount, "ui_icon_currency_soft_0");
+            RewardDefinition Diamond(int amount) =>
+                Reward("DIAMOND", "ui_icon_currency_hard_1", RewardRarity.Epic, RewardKind.Gems, amount, "ui_icon_currency_hard_0");
+            RewardDefinition LuckyGem(int amount) =>
+                Reward("LUCKY GEM", "ui_icon_currency_lucky_draw_1_1", RewardRarity.Uncommon, RewardKind.Item, amount, "ui_icon_currency_lucky_draw_0");
+            RewardDefinition Item(string name, string icon, RewardRarity rarity, string caption = "") =>
+                Reward(name, icon, rarity, RewardKind.Item, 1, caption: caption);
+            // A character, weapon or consumable is unlocked once; after that it comes as cards.
+            RewardDefinition Unlock(string name, string icon, RewardRarity rarity) => Item(name, icon, rarity, "UNLOCK NOW");
+            RewardDefinition Cards(string name, string icon, RewardRarity rarity, int amount) =>
+                Reward(name, icon, rarity, RewardKind.Item, amount, "ui_icon_generic_cards");
 
-            RewardDefinition Cleopatra() => Item("CLEOPATRA", "ui_icon_char_cleopatra", RewardRarity.Mythic);
-            RewardDefinition Solaris() => Item("SOLARIS", "ui_icon_special_solaris_render", RewardRarity.Legendary);
-            RewardDefinition Attachment() => Item("ATTACHMENT", "ui_icon_att_special_solaris_att_02_mag_2", RewardRarity.Rare);
-            RewardDefinition Anubis() => Item("ANUBIS MASK", "ui_icon_mask_anubis_render", RewardRarity.Epic);
-            RewardDefinition Ability() => Item("ABILITY", "ui_icon_battle_pass_ability", RewardRarity.Legendary);
-            RewardDefinition Dynamite(int amount) => Item("DYNAMITE", "ui_icon_cons_primary_dynamite_large", RewardRarity.Epic, amount);
+            const string cleopatra = "ui_icon_char_cleopatra";
+            const string solaris = "ui_icon_special_solaris_render";
+            const string anubis = "ui_icon_mask_anubis_render";
+            const string dynamite = "ui_icon_cons_primary_dynamite_large";
+            RewardDefinition Attachment() => Item("SOLARIS MAG", "ui_icon_att_special_solaris_att_02_mag_2", RewardRarity.Uncommon, "ATTACHMENT");
             RewardDefinition UncommonChest() => Item("UNCOMMON CHEST", "ui_icon_chest_uncommon", RewardRarity.Uncommon);
             RewardDefinition EpicChest() => Item("EPIC CHEST", "ui_icon_chest_epic", RewardRarity.Epic);
             RewardDefinition LegendaryChest() => Item("LEGENDARY CHEST", "ui_icon_chest_legendary", RewardRarity.Legendary);
-            RewardDefinition UncommonPack() => Item("UNCOMMON PACK", "ui_mega_pack_uncommon", RewardRarity.Uncommon);
-            RewardDefinition RarePack(int amount = 1) => Item("RARE PACK", "ui_mega_pack_rare", RewardRarity.Rare, amount);
-            RewardDefinition EpicPack(int amount = 1) => Item("EPIC PACK", "ui_card_pack_epic", RewardRarity.Epic, amount);
+            RewardDefinition UncommonPack() => Item("UNCOMMON BOOSTER PACK", "ui_mega_pack_uncommon", RewardRarity.Uncommon);
+            RewardDefinition RarePack() => Item("RARE BOOSTER PACK", "ui_mega_pack_rare", RewardRarity.Rare);
+            RewardDefinition EpicPack() => Item("EPIC CARD PACK", "ui_card_pack_epic", RewardRarity.Epic);
 
+            // Level 0, where the reference opens: the pass itself unlocks Cleopatra and Solaris and adds
+            // cards for both, and a free chest waits under the pass ticket.
+            season.start = new BattlePassSeason.PassStart
+            {
+                premium = new List<RewardDefinition>
+                {
+                    Unlock("CLEOPATRA", cleopatra, RewardRarity.Mythic),
+                    Unlock("SOLARIS", solaris, RewardRarity.Legendary),
+                    Cards("CLEOPATRA", cleopatra, RewardRarity.Mythic, 2),
+                    Cards("SOLARIS", solaris, RewardRarity.Legendary, 2),
+                },
+                free = new List<RewardDefinition> { UncommonChest() },
+            };
+
+            // Levels 1-10 follow the reference video; the rest of the season carries on in the same spirit.
             var levels = new (RewardDefinition premium, RewardDefinition free)[]
             {
-                (Cleopatra(), Gold(1000)),
-                (Solaris(), Diamond(2)),
-                (Gold(5000), LuckyGem(2)),
-                (Diamond(10), UncommonChest()),
-                (Dynamite(3), Gold(1000)),
+                (Gold(5000), Gold(1000)),
+                (Diamond(10), Diamond(2)),
+                (LuckyGem(10), LuckyGem(2)),
+                (Unlock("DYNAMITE", dynamite, RewardRarity.Epic), Diamond(2)),
                 (Attachment(), UncommonPack()),
-                (EpicChest(), Diamond(2)),
-                (RarePack(), LuckyGem(2)),
-                (Anubis(), Gold(1500)),
-                (LegendaryChest(), EpicPack()),
-                (Gold(7500), Diamond(3)),
-                (LuckyGem(10, RewardRarity.Rare), UncommonChest()),
-                (Ability(), Gold(2000)),
+                (EpicChest(), Gold(1000)),
+                (RarePack(), Diamond(2)),
+                (Cards("DYNAMITE", dynamite, RewardRarity.Epic, 2), LuckyGem(2)),
+                (Cards("CLEOPATRA", cleopatra, RewardRarity.Mythic, 3), Gold(1000)),
+                (EpicChest(), UncommonChest()),
+                (Gold(6000), Gold(1500)),
+                (Diamond(12), Diamond(3)),
+                (Unlock("ANUBIS MASK", anubis, RewardRarity.Legendary), LuckyGem(3)),
+                (RarePack(), Gold(1500)),
+                (LegendaryChest(), UncommonPack()),
+                (Cards("SOLARIS", solaris, RewardRarity.Legendary, 3), Diamond(3)),
+                (LuckyGem(15), Gold(2000)),
+                (EpicPack(), UncommonChest()),
+                (Gold(8000), LuckyGem(3)),
+                (Unlock("ABILITY", "ui_icon_battle_pass_ability", RewardRarity.Epic), Diamond(4)),
+                (Cards("DYNAMITE", dynamite, RewardRarity.Epic, 3), Gold(2000)),
                 (Diamond(15), RarePack()),
-                (EpicPack(), LuckyGem(3)),
-                (Dynamite(5), Diamond(3)),
-                (RarePack(2), Gold(2000)),
-                (EpicChest(), UncommonPack()),
-                (Gold(10000), Diamond(4)),
-                (LegendaryChest(), EpicChest()),
-                (Anubis(), Gold(2500)),
-                (Diamond(20), LuckyGem(4)),
-                (Attachment(), RarePack()),
-                (EpicPack(2), Diamond(5)),
-                (Gold(15000), UncommonChest()),
-                (Dynamite(8), Gold(3000)),
+                (Cards("ANUBIS MASK", anubis, RewardRarity.Legendary, 2), LuckyGem(4)),
+                (EpicChest(), Gold(2500)),
+                (Gold(10000), Diamond(5)),
+                (RarePack(), UncommonChest()),
+                (Cards("CLEOPATRA", cleopatra, RewardRarity.Mythic, 5), Gold(3000)),
                 (LegendaryChest(), LuckyGem(5)),
-                (Diamond(30), EpicPack()),
-                (Ability(), Diamond(6)),
-                (Solaris(), LegendaryChest()),
+                (Diamond(25), EpicPack()),
+                (Cards("SOLARIS", solaris, RewardRarity.Legendary, 5), LegendaryChest()),
             };
             season.levels = levels.Select(pair => new BattlePassSeason.Level { premium = pair.premium, free = pair.free }).ToList();
             EditorUtility.SetDirty(season);
@@ -424,23 +452,27 @@ namespace VertigoDemo.BattlePass.EditorTools
             var backgroundFx = AddFx(background, UIFxFlags.Shine, body);
             var icon = AddImage(Anchors(NewUI("Icon", body), new Vector2(0.04f, 0.17f), new Vector2(0.96f, 0.83f)), null, preserveAspect: true);
             var iconFx = AddFx(icon, UIFxFlags.Shine, body);
-            var title = AddText(Anchors(NewUI("Title", body), new Vector2(0.13f, 0.8f), new Vector2(0.87f, 0.97f)), "REWARD", 40f, Color.white, TextAlignmentOptions.Center, autoSizeMin: 16f);
+            var title = AddText(Anchors(NewUI("Title", body), new Vector2(0.13f, 0.8f), new Vector2(0.87f, 0.97f)), "REWARD", 40f, Color.white, TextAlignmentOptions.Center, autoSizeMin: 11f);
             var caption = AddText(Anchors(NewUI("Caption", body), new Vector2(0.05f, 0.03f), new Vector2(0.95f, 0.2f)), "x10", 38f, Color.white, TextAlignmentOptions.Center, autoSizeMin: 18f);
+            // Coin, gem or card in front of the amount; the card lays it out next to the text at runtime.
+            var captionIcon = AddImage(Anchors(NewUI("CaptionIcon", body), new Vector2(0.5f, 0.045f), new Vector2(0.5f, 0.185f)), "ui_icon_currency_soft_0", preserveAspect: true);
+            captionIcon.rectTransform.sizeDelta = new Vector2(46f, 0f);
 
             var claimedMark = AddImage(Anchors(NewUI("ClaimedMark", body), new Vector2(0.26f, 0.3f), new Vector2(0.74f, 0.72f)), "ui_icon_check_green_highres", preserveAspect: true);
             var lockBadge = AddImage(Anchors(NewUI("LockBadge", body), new Vector2(-0.14f, 0.83f), new Vector2(0.14f, 1.11f)), "ui_icon_generic_locked", preserveAspect: true);
-            var alertBadge = AddImage(Anchors(NewUI("AlertBadge", body), new Vector2(0.86f, 0.86f), new Vector2(1.11f, 1.11f)), "ui_icon_generic_red_dot", preserveAspect: true);
+            // Small, like the reference: every reached reward carries one, so a big badge would be noise.
+            var alertBadge = AddImage(Anchors(NewUI("AlertBadge", body), new Vector2(0.885f, 0.9f), new Vector2(1.045f, 1.05f)), "ui_icon_generic_red_dot", preserveAspect: true);
             var alertFx = AddFx(alertBadge, UIFxFlags.Bob);
             var selection = AddImage(Stretch(NewUI("SelectionFrame", body), -12f, -12f, -12f, -12f), "ui_item_frame_thick_16px", Color.white, sliced: true);
             AddFx(selection, UIFxFlags.Pulse, idle: 1f);
 
             Wire(view,
                 ("body", body), ("background", background), ("icon", icon), ("title", title), ("caption", caption),
-                ("lockBadge", lockBadge), ("alertBadge", alertBadge), ("claimedMark", claimedMark),
+                ("captionIcon", captionIcon), ("lockBadge", lockBadge), ("alertBadge", alertBadge), ("claimedMark", claimedMark),
                 ("glow", glow), ("rays", rays), ("selectionFrame", selection.gameObject),
                 ("backgroundFx", backgroundFx), ("iconFx", iconFx), ("glowFx", glowFx), ("alertFx", alertFx));
 
-            foreach (var hidden in new Graphic[] { glow, rays, claimedMark, lockBadge, alertBadge, selection })
+            foreach (var hidden in new Graphic[] { glow, rays, claimedMark, lockBadge, alertBadge, selection, captionIcon })
                 hidden.gameObject.SetActive(false);
 
             return SavePrefab<RewardCardView>(root, PrefabFolder + "/PF_RewardCard.prefab");
@@ -456,11 +488,15 @@ namespace VertigoDemo.BattlePass.EditorTools
             AddFx(ring, UIFxFlags.Pulse | UIFxFlags.Additive, idle: 1f);
             var circle = AddImage(Stretch(NewUI("Circle", root)), "ui_item_circle_eventpass_progress");
             var label = AddText(Stretch(NewUI("Label", root)), "1", 42f, Color.white, TextAlignmentOptions.Center);
+            // The pass ticket marks the start of the road instead of a number, as in the reference.
+            var ticket = AddImage(Place(NewUI("Ticket", root), Center, Center, new Vector2(0f, 4f), new Vector2(132f, 132f)), "ui_icon_battlepass_shadow", preserveAspect: true);
+            ticket.rectTransform.localEulerAngles = new Vector3(0f, 0f, -8f);
 
             Wire(view,
-                ("circle", circle), ("label", label), ("nextRing", ring.gameObject),
+                ("circle", circle), ("label", label), ("nextRing", ring.gameObject), ("ticket", ticket.gameObject),
                 ("reachedSprite", Sprite("ui_item_circle_eventpass_claim")), ("lockedSprite", Sprite("ui_item_circle_eventpass_progress")));
             ring.gameObject.SetActive(false);
+            ticket.gameObject.SetActive(false);
             return SavePrefab<LevelNodeView>(root, PrefabFolder + "/PF_LevelNode.prefab");
         }
 
@@ -483,7 +519,7 @@ namespace VertigoDemo.BattlePass.EditorTools
             return SavePrefab<RoadLevelView>(root, PrefabFolder + "/PF_RoadLevel.prefab");
         }
 
-        static BattlePassScreen BuildScreen(BattlePassSeason season, RarityPalette palette, RoadLevelView levelPrefab, ParticleSystem claimBurst, ParticleSystem unlockBurst)
+        static BattlePassScreen BuildScreen(BattlePassSeason season, RarityPalette palette, RoadLevelView columnPrefab, ParticleSystem claimBurst, ParticleSystem unlockBurst)
         {
             var root = Stretch(NewUI("PF_BattlePassScreen", null));
             var screen = root.gameObject.AddComponent<BattlePassScreen>();
@@ -496,7 +532,7 @@ namespace VertigoDemo.BattlePass.EditorTools
             // Interactive content stays inside the device safe area; background and FX span the whole screen.
             var safeArea = Stretch(NewUI("SafeArea", root));
             safeArea.gameObject.AddComponent<SafeAreaFitter>();
-            var road = BuildRoad(safeArea, out var track, out var levelContainer, out var skipButton, out var skipCost, out var emptyRoadClicks);
+            var road = BuildRoad(safeArea, out var track, out var columnContainer, out var skipButton, out var skipCost, out var jumpButton, out var emptyRoadClicks);
             var seasonPanel = BuildSeasonPanel(safeArea);
             var topBar = BuildTopBar(safeArea);
             var tooltip = BuildTooltip(safeArea);
@@ -519,16 +555,16 @@ namespace VertigoDemo.BattlePass.EditorTools
             Wire(autoplay, ("screen", screen), ("touchRing", touchRing));
 
             Wire(screen,
-                ("season", season), ("palette", palette), ("road", road), ("levelContainer", levelContainer),
-                ("levelPrefab", levelPrefab), ("track", track), ("skipButton", skipButton), ("skipCostLabel", skipCost),
-                ("emptyRoadClicks", emptyRoadClicks), ("topBar", topBar), ("seasonPanel", seasonPanel),
+                ("season", season), ("palette", palette), ("road", road), ("columnContainer", columnContainer),
+                ("columnPrefab", columnPrefab), ("track", track), ("skipButton", skipButton), ("skipCostLabel", skipCost),
+                ("jumpButton", jumpButton), ("emptyRoadClicks", emptyRoadClicks), ("topBar", topBar), ("seasonPanel", seasonPanel),
                 ("tooltip", tooltip), ("fx", fx), ("currencyFly", currencyFly));
 
             return SavePrefab<BattlePassScreen>(root, ScreenPrefabPath);
         }
 
-        static ScrollRect BuildRoad(RectTransform parent, out ProgressTrackView track, out RectTransform levelContainer,
-            out Button skipButton, out TMP_Text skipCost, out PointerClickRelay emptyRoadClicks)
+        static ScrollRect BuildRoad(RectTransform parent, out ProgressTrackView track, out RectTransform columnContainer,
+            out Button skipButton, out TMP_Text skipCost, out ProgressJumpButton jumpButton, out PointerClickRelay emptyRoadClicks)
         {
             var rect = NewUI("Road", parent);
             rect.anchorMin = Vector2.zero;
@@ -579,7 +615,7 @@ namespace VertigoDemo.BattlePass.EditorTools
             var fill = Place(NewUI("TrackFill", content), new Vector2(0f, 0.5f), new Vector2(0f, 0.5f), new Vector2(0f, -60f), new Vector2(400f, 36f));
             AddImage(fill, "ui_progres_bar_battle_pass_fill", sliced: true);
 
-            levelContainer = Stretch(NewUI("Levels", content));
+            columnContainer = Stretch(NewUI("Columns", content));
 
             var marker = Place(NewUI("SkipLevelButton", content), new Vector2(0f, 0.5f), Center, new Vector2(0f, -60f), new Vector2(190f, 190f));
             var markerImage = AddImage(marker, "ui_button_indicator", raycast: true, preserveAspect: true);
@@ -589,6 +625,20 @@ namespace VertigoDemo.BattlePass.EditorTools
 
             track = content.gameObject.AddComponent<ProgressTrackView>();
             Wire(track, ("fill", fill), ("reachedArea", reached), ("marker", marker));
+
+            // Tag pointing at the player's progress while it is scrolled out of view. It sits outside the
+            // viewport, so the mask never clips it, and moves between the road's edges.
+            var jumpRoot = Stretch(NewUI("ProgressJump", rect));
+            jumpButton = jumpRoot.gameObject.AddComponent<ProgressJumpButton>();
+            var bubble = Place(NewUI("Tag", jumpRoot), new Vector2(1f, 0.5f), Center, new Vector2(-100f, 110f), new Vector2(124f, 104f));
+            var shape = AddImage(Stretch(NewUI("Shape", bubble)), "ui_button_battlepass_indicator_white", raycast: true);
+            var jump = AddButton(bubble, shape);
+            var badge = Place(NewUI("Badge", bubble), Center, Center, new Vector2(-9f, 0f), new Vector2(74f, 74f));
+            AddImage(badge, "ui_item_circle_eventpass_progress");
+            var level = AddText(Stretch(NewUI("Level", badge)), "4", 40f, Color.white, TextAlignmentOptions.Center);
+            Wire(jumpButton, ("road", scroll), ("button", jump), ("bubble", bubble), ("bubbleShape", shape.rectTransform),
+                ("badge", badge), ("label", level));
+            bubble.gameObject.SetActive(false);
             return scroll;
         }
 
@@ -796,12 +846,16 @@ namespace VertigoDemo.BattlePass.EditorTools
             canvasRect.localScale = Vector3.one * (camera.orthographicSize * 2f / height);
             canvasRect.position = new Vector3(camera.transform.position.x, camera.transform.position.y, 0f);
 
+            // Edit mode runs no LateUpdate, so the jump tag is refreshed by hand after each scroll.
+            var jump = Object.FindFirstObjectByType<ProgressJumpButton>();
             screen.BuildForPreview();
+            jump.Refresh(animate: false);
             Capture(camera, width, height, fileName);
 
-            // Second shot from the start of the road, where the claimed first reward sits.
+            // Second shot from the start of the road, where the pass rewards and the ticket sit.
             var road = Object.FindFirstObjectByType<ScrollRect>();
             road.content.anchoredPosition = new Vector2(0f, road.content.anchoredPosition.y);
+            jump.Refresh(animate: false);
             Capture(camera, width, height, Path.GetFileNameWithoutExtension(fileName) + "_start.png");
         }
 
