@@ -13,7 +13,7 @@ namespace VertigoDemo.BattlePass.UI
 
         [Header("XP")]
         [SerializeField] RectTransform xpFill;
-        [SerializeField] float xpFillWidth = 214f;
+        [SerializeField] float xpFillWidth = 230f;
         [SerializeField] TMP_Text xpLabel;
         [SerializeField] TMP_Text nextLevelLabel;
         [SerializeField] RectTransform nextLevelBadge;

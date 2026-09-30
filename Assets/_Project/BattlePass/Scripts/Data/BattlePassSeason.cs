@@ -38,14 +38,6 @@ namespace VertigoDemo.BattlePass
 
         public int LevelCount => levels.Count;
 
-        /// <summary>Rewards on one track of a level: any number at level 0, one on every other level.</summary>
-        public int RewardCount(int level, RewardTrack track)
-        {
-            if (level > 0)
-                return 1;
-            return track == RewardTrack.Free ? start.free.Count : start.premium.Count;
-        }
-
         public RewardDefinition GetReward(RewardSlot slot)
         {
             if (slot.Level == 0)

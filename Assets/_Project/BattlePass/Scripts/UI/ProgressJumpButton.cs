@@ -8,18 +8,18 @@ using VertigoDemo.UI;
 namespace VertigoDemo.BattlePass.UI
 {
     /// <summary>
-    /// Waits at the edge of the road while the player's progress is scrolled out of view, pointing
-    /// towards it with the number of the level being worked on, like the reference; tapping it scrolls
-    /// back. It only touches the UI when it has to appear, switch sides or hide.
+    /// Tag at the edge of the road that points at the player's progress while it is scrolled out of
+    /// view, with the number of the level being worked on; tapping it scrolls back. It only touches
+    /// the UI when it has to appear, switch sides or hide.
     /// </summary>
     public sealed class ProgressJumpButton : MonoBehaviour
     {
         [SerializeField] ScrollRect road;
         [SerializeField] Button button;
         [Tooltip("The tag itself, moved to either edge of the road and shown or hidden.")]
-        [SerializeField] RectTransform bubble;
+        [SerializeField] RectTransform tagRoot;
         [Tooltip("The tag's background, mirrored so that its tip points at the progress.")]
-        [SerializeField] RectTransform bubbleShape;
+        [SerializeField] RectTransform tagShape;
         [Tooltip("The numbered circle, kept centred on the square part of the tag.")]
         [SerializeField] RectTransform badge;
         [SerializeField] TMP_Text label;
@@ -38,8 +38,10 @@ namespace VertigoDemo.BattlePass.UI
         void Awake()
         {
             button.onClick.AddListener(() => Pressed?.Invoke());
-            bubble.gameObject.SetActive(false);
+            tagRoot.gameObject.SetActive(false);
         }
+
+        void LateUpdate() => Refresh(animate: true);
 
         /// <summary>Where the progress sits, in road content units, and the level being worked on.</summary>
         public void SetTarget(float contentX, int level)
@@ -47,8 +49,6 @@ namespace VertigoDemo.BattlePass.UI
             targetX = contentX;
             label.text = level.ToString();
         }
-
-        void LateUpdate() => Refresh(animate: true);
 
         public void Refresh(bool animate)
         {
@@ -67,27 +67,27 @@ namespace VertigoDemo.BattlePass.UI
             if (side == 0)
             {
                 if (animate)
-                    popRoutine = StartCoroutine(Pop(show: false, from: bubble.localScale.x));
+                    popRoutine = StartCoroutine(Pop(show: false, from: tagRoot.localScale.x));
                 else
-                    bubble.gameObject.SetActive(false);
+                    tagRoot.gameObject.SetActive(false);
                 return;
             }
 
             Place(side);
-            bubble.gameObject.SetActive(true);
+            tagRoot.gameObject.SetActive(true);
             if (animate)
                 popRoutine = StartCoroutine(Pop(show: true, from: wasShown ? 0.7f : 0f));
             else
-                bubble.localScale = Vector3.one;
+                tagRoot.localScale = Vector3.one;
         }
 
         void Place(int direction)
         {
-            var anchor = new Vector2(direction > 0 ? 1f : 0f, bubble.anchorMin.y);
-            bubble.anchorMin = anchor;
-            bubble.anchorMax = anchor;
-            bubble.anchoredPosition = new Vector2(-direction * edgeInset, bubble.anchoredPosition.y);
-            bubbleShape.localScale = new Vector3(direction, 1f, 1f);
+            var anchor = new Vector2(direction > 0 ? 1f : 0f, tagRoot.anchorMin.y);
+            tagRoot.anchorMin = anchor;
+            tagRoot.anchorMax = anchor;
+            tagRoot.anchoredPosition = new Vector2(-direction * edgeInset, tagRoot.anchoredPosition.y);
+            tagShape.localScale = new Vector3(direction, 1f, 1f);
             badge.anchoredPosition = new Vector2(-direction * badgeOffset, badge.anchoredPosition.y);
         }
 
@@ -96,10 +96,10 @@ namespace VertigoDemo.BattlePass.UI
             yield return Tween.Run(show ? 0.25f : 0.15f, t =>
             {
                 float scale = show ? Mathf.LerpUnclamped(from, 1f, Ease.OutBack(t)) : Mathf.Lerp(from, 0f, t);
-                bubble.localScale = Vector3.one * scale;
+                tagRoot.localScale = Vector3.one * scale;
             });
             if (!show)
-                bubble.gameObject.SetActive(false);
+                tagRoot.gameObject.SetActive(false);
             popRoutine = null;
         }
     }

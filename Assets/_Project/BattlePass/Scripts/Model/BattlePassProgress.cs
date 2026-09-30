@@ -12,6 +12,7 @@ namespace VertigoDemo.BattlePass
         PremiumLocked,
         /// <summary>Unlocked and waiting to be claimed.</summary>
         Claimable,
+        /// <summary>Already collected.</summary>
         Claimed,
     }
 

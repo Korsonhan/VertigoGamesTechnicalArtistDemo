@@ -12,8 +12,7 @@ namespace VertigoDemo.WeaponVFX
     {
         [SerializeField] InspectTurntable turntable;
 
-        public bool IsPlaying { get; private set; }
-        public bool IsFinished { get; private set; }
+        bool playing;
 
         void Update()
         {
@@ -24,16 +23,14 @@ namespace VertigoDemo.WeaponVFX
 
         public void Play()
         {
-            if (IsPlaying)
+            if (playing)
                 return;
             StartCoroutine(Showcase());
         }
 
         IEnumerator Showcase()
         {
-            IsPlaying = true;
-            IsFinished = false;
-
+            playing = true;
             turntable.ShowView(0);
             yield return new WaitForSeconds(5f);
             turntable.ShowView(1);
@@ -41,9 +38,7 @@ namespace VertigoDemo.WeaponVFX
             yield return turntable.Spin(360f, 7f);
             turntable.ShowView(0);
             yield return new WaitForSeconds(3.5f);
-
-            IsPlaying = false;
-            IsFinished = true;
+            playing = false;
         }
     }
 }

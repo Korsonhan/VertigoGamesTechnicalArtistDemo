@@ -25,7 +25,7 @@ namespace VertigoDemo.UI
     [RequireComponent(typeof(Graphic))]
     public sealed class UIFxMeshEffect : BaseMeshEffect
     {
-        [Tooltip("Rect the shine and gradients are laid out in. Share one between the parts of a card so the sweep lines up across them.")]
+        [Tooltip("Rect the shine sweep is laid out in. Share one between the parts of a card so the sweep lines up across them.")]
         [SerializeField] RectTransform effectSpace;
         [SerializeField] UIFxFlags flags;
         [SerializeField, Range(0f, 1f)] float phase;
@@ -34,7 +34,6 @@ namespace VertigoDemo.UI
         [SerializeField, Range(0f, 2f)] float brightness = 1f;
         [SerializeField, Range(0f, 1f)] float flash;
 
-        public UIFxFlags Flags { get => flags; set { if (flags != value) { flags = value; Refresh(); } } }
         public float Phase { get => phase; set => Set(ref phase, value); }
         public float Idle { get => idle; set => Set(ref idle, value); }
         public float Saturation { get => saturation; set => Set(ref saturation, value); }

@@ -69,7 +69,6 @@ namespace VertigoDemo.BattlePass.UI
 
         IEnumerator Start()
         {
-            // Open at the start of the road, on what the pass grants, then glide to the player's progress.
             SetScroll(0f);
             yield return Tween.Wait(openingHold);
             ScrollToProgress(animate: true);
@@ -92,9 +91,8 @@ namespace VertigoDemo.BattlePass.UI
         // Handles for the scripted walkthrough (BattlePassAutoplay) and tests.
         public RewardCardView GetCard(int level, RewardTrack rewardTrack, int index = 0) => cards[new RewardSlot(level, rewardTrack, index)];
         public Button SkipLevelButton => skipButton;
-        public Button PremiumButton => seasonPanel.GetButton;
+        public Button PremiumButton => seasonPanel.PremiumButton;
         public Button JumpButton => jumpButton.Button;
-        public int CurrentLevel => progress.Level;
 
         public void ScrollToLevel(int level) => ScrollTo(LevelX(level), animate: true);
 
@@ -149,7 +147,7 @@ namespace VertigoDemo.BattlePass.UI
             topBar.Coins.Set(startCoins);
             topBar.Gems.Set(startGems);
             seasonPanel.SetSeason(season.seasonTitle);
-            seasonPanel.GetPressed += OnGetPremium;
+            seasonPanel.PremiumPressed += OnGetPremium;
             skipCostLabel.text = season.skipLevelCost.ToString();
             skipButton.onClick.AddListener(OnSkipLevel);
             jumpButton.Pressed += ScrollToProgress;

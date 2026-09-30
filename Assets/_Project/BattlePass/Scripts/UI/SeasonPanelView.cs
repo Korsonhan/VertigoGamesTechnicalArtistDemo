@@ -9,30 +9,30 @@ namespace VertigoDemo.BattlePass.UI
     public sealed class SeasonPanelView : MonoBehaviour
     {
         [SerializeField] TMP_Text seasonLabel;
-        [SerializeField] Button getButton;
-        [SerializeField] Image getButtonImage;
-        [SerializeField] TMP_Text getLabel;
+        [SerializeField] Button premiumButton;
+        [SerializeField] Image premiumButtonImage;
+        [SerializeField] TMP_Text premiumButtonLabel;
         [SerializeField] Sprite ownedButtonSprite;
         [SerializeField] GameObject offerGroup;
 
-        public event Action GetPressed;
+        public event Action PremiumPressed;
 
-        public Button GetButton => getButton;
+        public Button PremiumButton => premiumButton;
 
         Sprite offerButtonSprite;
 
-        void Awake() => getButton.onClick.AddListener(() => GetPressed?.Invoke());
+        void Awake() => premiumButton.onClick.AddListener(() => PremiumPressed?.Invoke());
 
         public void SetSeason(string title) => seasonLabel.text = title;
 
         public void SetPremium(bool owned)
         {
             if (offerButtonSprite == null)
-                offerButtonSprite = getButtonImage.sprite;
+                offerButtonSprite = premiumButtonImage.sprite;
 
-            getButton.interactable = !owned;
-            getButtonImage.sprite = owned ? ownedButtonSprite : offerButtonSprite;
-            getLabel.text = owned ? "ACTIVE" : "GET";
+            premiumButton.interactable = !owned;
+            premiumButtonImage.sprite = owned ? ownedButtonSprite : offerButtonSprite;
+            premiumButtonLabel.text = owned ? "ACTIVE" : "GET";
             offerGroup.SetActive(!owned);
         }
     }

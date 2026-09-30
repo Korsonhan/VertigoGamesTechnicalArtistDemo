@@ -61,9 +61,15 @@ namespace VertigoDemo.WeaponVFX.Tests
             using var triangles = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Triangles Count");
             for (int i = 0; i < 5; i++)
                 yield return null;
+            int liveParticles = Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None).Sum(s => s.particleCount);
             Debug.Log($"[Perf] Weapon inspect scene: {batches.LastValue} batches, {setPassCalls.LastValue} SetPass calls, " +
-                      $"{drawCalls.LastValue} draw calls, {triangles.LastValue} triangles, " +
-                      $"{Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None).Sum(s => s.particleCount)} live particles");
+                      $"{drawCalls.LastValue} draw calls, {triangles.LastValue} triangles, {liveParticles} live particles");
+
+            // Budgets for a mobile inspect screen, with some headroom over the current cost.
+            Assert.Greater(drawCalls.LastValue, 0, "Render counters were not recorded.");
+            Assert.LessOrEqual(drawCalls.LastValue, 35, "Too many draw calls.");
+            Assert.LessOrEqual(triangles.LastValue, 10000, "Too many triangles.");
+            Assert.LessOrEqual(liveParticles, 64, "Too many live particles.");
 
             // Frames over time from the side view, then the three-quarter view.
             for (int i = 0; i < 4; i++)

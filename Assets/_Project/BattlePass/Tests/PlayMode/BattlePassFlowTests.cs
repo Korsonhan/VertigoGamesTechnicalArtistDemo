@@ -72,7 +72,10 @@ namespace VertigoDemo.BattlePass.Tests
 
             Debug.Log($"[Perf] Idle Battle Pass screen: {batches.LastValue} batches, {setPassCalls.LastValue} SetPass calls, " +
                       $"{drawCalls.LastValue} draw calls, {vertices.LastValue} vertices");
+
+            // Budget with some headroom over the current cost; the atlases are what keep it this low.
             Assert.Greater(drawCalls.LastValue, 0, "Render counters were not recorded.");
+            Assert.LessOrEqual(drawCalls.LastValue, 35, "Too many draw calls on the idle screen.");
         }
 
         [UnityTest]

@@ -64,7 +64,7 @@ namespace VertigoDemo.WeaponVFX
             idleTime = 0f;
         }
 
-        /// <summary>Turns the rifle a full circle at a steady speed, then keeps its current view.</summary>
+        /// <summary>Turns the rifle by <paramref name="degrees"/>, easing in and out, and ends on the view it started from.</summary>
         public IEnumerator Spin(float degrees, float duration)
         {
             float start = target.x;
@@ -74,7 +74,7 @@ namespace VertigoDemo.WeaponVFX
                 idleTime = 0f;
                 yield return null;
             }
-            // Unwind the extra turn on both angles so the next view does not spin back.
+            // Drop the turn from the target and the current yaw together, so the next view does not spin back.
             target.x = start;
             current.x += degrees;
         }

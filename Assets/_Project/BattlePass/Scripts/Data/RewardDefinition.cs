@@ -9,6 +9,7 @@ namespace VertigoDemo.BattlePass
     /// <summary>What claiming the reward adds to the wallet; everything else is a plain item.</summary>
     public enum RewardKind { Item, Coins, Gems }
 
+    /// <summary>One reward: what it is, how its card reads and what claiming it adds to the wallet.</summary>
     [Serializable]
     public sealed class RewardDefinition
     {

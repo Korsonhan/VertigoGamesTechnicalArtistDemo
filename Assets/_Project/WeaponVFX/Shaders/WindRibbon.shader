@@ -11,7 +11,7 @@ Shader "VertigoDemo/FX/Wind Ribbon"
 {
     Properties
     {
-        _StreakTex ("Streak (alpha)", 2D) = "white" {}
+        [NoScaleOffset] _StreakTex ("Streak (alpha)", 2D) = "white" {}
         [HDR] _LineColor ("Line", Color) = (1.5, 1.2, 0.6, 1)
         [HDR] _SheetColor ("Sheet", Color) = (0.8, 0.55, 0.16, 1)
         _Intensity ("Intensity", Float) = 1
@@ -83,7 +83,6 @@ Shader "VertigoDemo/FX/Wind Ribbon"
             SAMPLER(sampler_StreakTex);
 
             CBUFFER_START(UnityPerMaterial)
-                float4 _StreakTex_ST;
                 half4 _LineColor;
                 half4 _SheetColor;
                 half _Intensity;
@@ -145,7 +144,7 @@ Shader "VertigoDemo/FX/Wind Ribbon"
                     float fromStrand = (lane - (index + 0.5 + (random2 - 0.5) * 0.6)) / lerp(0.18, 0.4, random);
                     half strand = exp2(-1.4427 * fromStrand * fromStrand);
 
-                    // The stroke sprite's centre line breaks the strand into pieces with soft, tapered ends.
+                    // The streak sprite's centre line breaks the strand into pieces with soft, tapered ends.
                     // Sampled at an explicit level: neighbouring lanes jump in u, and inside the branch
                     // screen-space derivatives would be meaningless anyway.
                     float pieceU = frac(along * lerp(1.0, 2.2, random2) - _Time.y * _FlowSpeed * speed * lerp(0.8, 1.3, random) + random * 5.1);
@@ -167,7 +166,7 @@ Shader "VertigoDemo/FX/Wind Ribbon"
                 half brightness = input.color.b;
                 half wisp = input.color.a;
 
-                // Light travelling towards the tail: the stroke sprite's centre line, scrolled in two
+                // Light travelling towards the tail: the streak sprite's centre line, scrolled in two
                 // layers. It only modulates the ribbon, so it brightens and dims without breaking into dashes.
                 float streakU = frac(along * _StreakTiling - _Time.y * _FlowSpeed * speed + seed * 3.17);
                 float detailU = frac(along * _DetailTiling - _Time.y * _DetailSpeed * speed + seed * 7.31);

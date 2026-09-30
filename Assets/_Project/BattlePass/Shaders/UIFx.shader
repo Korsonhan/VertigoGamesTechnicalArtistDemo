@@ -1,4 +1,4 @@
-// UGUI shader for the Battle Pass road. Every image shares this one material so the canvas
+// UGUI shader for the Battle Pass screen. Every image shares this one material so the canvas
 // batches, while per-element parameters arrive through extra UV channels (see UIFxMeshEffect):
 //   TEXCOORD1: xy = position inside the effect rect (0-1), z = phase, w = idle intensity
 //   TEXCOORD2: x = desaturation, y = brightness offset, z = white flash, w = effect flags
@@ -194,7 +194,7 @@ Shader "VertigoDemo/UI/Fx"
                 float pulse = _PulseMin + (1.0 - _PulseMin) * (0.5 + 0.5 * sin(_Time.y * _PulseSpeed + phase * TWO_PI));
                 color.a *= lerp(1.0, pulse, HasFlag(flags, FLAG_PULSE) * idle);
 
-                // One-shot white flash used by the unlock and claim transitions.
+                // One-shot white flash used by the card state transitions.
                 color.rgb = lerp(color.rgb, half3(1.0, 1.0, 1.0), i.fx1.z);
 
                 #ifdef UNITY_UI_CLIP_RECT

@@ -12,8 +12,6 @@ namespace VertigoDemo.BattlePass.UI
     /// One reward slot on the road. Applies the look of each state and plays the one-shot
     /// transitions between them; the looping idle effects (shine, glow pulse, badge bob) run in
     /// the UIFx shader, so an idle claimable card costs nothing on the CPU.
-    /// Like the reference, a reward shows its rarity's card until its level is reached and the shared
-    /// collectable card from then on.
     /// </summary>
     public sealed class RewardCardView : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerClickHandler
     {

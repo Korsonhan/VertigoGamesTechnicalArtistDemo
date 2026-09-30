@@ -6,7 +6,6 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.U2D;
 using UnityEngine;
-using UnityEngine.U2D;
 using UnityEngine.UI;
 using VertigoDemo.BattlePass.UI;
 using VertigoDemo.UI;
@@ -519,7 +518,7 @@ namespace VertigoDemo.BattlePass.EditorTools
             return SavePrefab<RoadLevelView>(root, PrefabFolder + "/PF_RoadLevel.prefab");
         }
 
-        static BattlePassScreen BuildScreen(BattlePassSeason season, RarityPalette palette, RoadLevelView columnPrefab, ParticleSystem claimBurst, ParticleSystem unlockBurst)
+        static void BuildScreen(BattlePassSeason season, RarityPalette palette, RoadLevelView columnPrefab, ParticleSystem claimBurst, ParticleSystem unlockBurst)
         {
             var root = Stretch(NewUI("PF_BattlePassScreen", null));
             var screen = root.gameObject.AddComponent<BattlePassScreen>();
@@ -560,7 +559,7 @@ namespace VertigoDemo.BattlePass.EditorTools
                 ("jumpButton", jumpButton), ("emptyRoadClicks", emptyRoadClicks), ("topBar", topBar), ("seasonPanel", seasonPanel),
                 ("tooltip", tooltip), ("fx", fx), ("currencyFly", currencyFly));
 
-            return SavePrefab<BattlePassScreen>(root, ScreenPrefabPath);
+            SavePrefab<BattlePassScreen>(root, ScreenPrefabPath);
         }
 
         static ScrollRect BuildRoad(RectTransform parent, out ProgressTrackView track, out RectTransform columnContainer,
@@ -630,15 +629,15 @@ namespace VertigoDemo.BattlePass.EditorTools
             // viewport, so the mask never clips it, and moves between the road's edges.
             var jumpRoot = Stretch(NewUI("ProgressJump", rect));
             jumpButton = jumpRoot.gameObject.AddComponent<ProgressJumpButton>();
-            var bubble = Place(NewUI("Tag", jumpRoot), new Vector2(1f, 0.5f), Center, new Vector2(-100f, 110f), new Vector2(124f, 104f));
-            var shape = AddImage(Stretch(NewUI("Shape", bubble)), "ui_button_battlepass_indicator_white", raycast: true);
-            var jump = AddButton(bubble, shape);
-            var badge = Place(NewUI("Badge", bubble), Center, Center, new Vector2(-9f, 0f), new Vector2(74f, 74f));
+            var tag = Place(NewUI("Tag", jumpRoot), new Vector2(1f, 0.5f), Center, new Vector2(-100f, 110f), new Vector2(124f, 104f));
+            var shape = AddImage(Stretch(NewUI("Shape", tag)), "ui_button_battlepass_indicator_white", raycast: true);
+            var jump = AddButton(tag, shape);
+            var badge = Place(NewUI("Badge", tag), Center, Center, new Vector2(-9f, 0f), new Vector2(74f, 74f));
             AddImage(badge, "ui_item_circle_eventpass_progress");
             var level = AddText(Stretch(NewUI("Level", badge)), "4", 40f, Color.white, TextAlignmentOptions.Center);
-            Wire(jumpButton, ("road", scroll), ("button", jump), ("bubble", bubble), ("bubbleShape", shape.rectTransform),
+            Wire(jumpButton, ("road", scroll), ("button", jump), ("tagRoot", tag), ("tagShape", shape.rectTransform),
                 ("badge", badge), ("label", level));
-            bubble.gameObject.SetActive(false);
+            tag.gameObject.SetActive(false);
             return scroll;
         }
 
@@ -676,10 +675,10 @@ namespace VertigoDemo.BattlePass.EditorTools
             ticket.localEulerAngles = new Vector3(0f, 0f, 12f);
             AddImage(ticket, "ui_icon_battlepass_shadow", preserveAspect: true);
 
-            var getRect = Place(NewUI("GetButton", panel), new Vector2(0.5f, 0f), Center, new Vector2(20f, 132f), new Vector2(250f, 96f));
-            var getImage = AddImage(getRect, "ui_button_yellow", sliced: true, raycast: true);
-            var getButton = AddButton(getRect, getImage);
-            var getLabel = AddText(Stretch(NewUI("Label", getRect), 0f, 8f, 0f, 0f), "GET", 54f, Color.white, TextAlignmentOptions.Center);
+            var premiumRect = Place(NewUI("GetButton", panel), new Vector2(0.5f, 0f), Center, new Vector2(20f, 132f), new Vector2(250f, 96f));
+            var premiumImage = AddImage(premiumRect, "ui_button_yellow", sliced: true, raycast: true);
+            var premiumButton = AddButton(premiumRect, premiumImage);
+            var premiumLabel = AddText(Stretch(NewUI("Label", premiumRect), 0f, 8f, 0f, 0f), "GET", 54f, Color.white, TextAlignmentOptions.Center);
 
             var offer = Stretch(NewUI("Offer", panel));
             var flag = Place(NewUI("DiscountFlag", offer), new Vector2(0.5f, 0f), Center, new Vector2(0f, 46f), new Vector2(390f, 68f));
@@ -691,7 +690,7 @@ namespace VertigoDemo.BattlePass.EditorTools
             AddText(Stretch(NewUI("Label", badge), 14f, 14f, 14f, 14f), "x100\nVALUE", 26f, Color.white, TextAlignmentOptions.Center, autoSizeMin: 14f);
 
             Wire(view,
-                ("seasonLabel", seasonLabel), ("getButton", getButton), ("getButtonImage", getImage), ("getLabel", getLabel),
+                ("seasonLabel", seasonLabel), ("premiumButton", premiumButton), ("premiumButtonImage", premiumImage), ("premiumButtonLabel", premiumLabel),
                 ("ownedButtonSprite", Sprite("ui_button_green")), ("offerGroup", offer.gameObject));
             return view;
         }

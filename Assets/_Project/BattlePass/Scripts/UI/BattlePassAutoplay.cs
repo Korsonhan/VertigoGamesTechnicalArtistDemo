@@ -17,8 +17,7 @@ namespace VertigoDemo.BattlePass.UI
         [SerializeField] BattlePassScreen screen;
         [SerializeField] Image touchRing;
 
-        public bool IsPlaying { get; private set; }
-        public bool IsFinished { get; private set; }
+        bool playing;
 
         void Update()
         {
@@ -29,15 +28,14 @@ namespace VertigoDemo.BattlePass.UI
 
         public void Play()
         {
-            if (IsPlaying)
+            if (playing)
                 return;
             StartCoroutine(Walkthrough());
         }
 
         IEnumerator Walkthrough()
         {
-            IsPlaying = true;
-            IsFinished = false;
+            playing = true;
 
             // Start where the road starts: claim the free chest under the pass ticket and look at what
             // comes with the pass.
@@ -93,9 +91,7 @@ namespace VertigoDemo.BattlePass.UI
             yield return Tween.Wait(2.2f);
             yield return Tap(screen.JumpButton);
             yield return Tween.Wait(2f);
-
-            IsPlaying = false;
-            IsFinished = true;
+            playing = false;
         }
 
         IEnumerator Tap(RewardCardView card) => Tap(card.gameObject, card.Body.position);

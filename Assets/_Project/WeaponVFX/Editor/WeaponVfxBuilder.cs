@@ -218,7 +218,7 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             // Over the barrel and past the sight, slipping behind the scarf.
             Ribbon(new[] { P(-0.012f, 0.050f, 0.520f), P(-0.020f, 0.070f, 0.400f), P(-0.030f, 0.090f, 0.270f), P(-0.020f, 0.095f, 0.170f), P(0.020f, 0.100f, 0.100f) },
                 -45f, -20f, 0.022f, 0.7f, 1.2f),
-            // Soft wisp coming off the muzzle.
+            // Short, faint ribbon off the muzzle.
             Ribbon(new[] { P(-0.010f, 0.035f, 0.585f), P(-0.018f, 0.028f, 0.520f), P(-0.026f, 0.018f, 0.450f), P(-0.032f, 0.005f, 0.380f) },
                 75f, 60f, 0.035f, 0.5f, 0.8f),
             // Behind the rifle.
@@ -494,10 +494,9 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             frame.type = Image.Type.Sliced;
             frame.color = new Color(0.35f, 0.5f, 1f);
             frame.raycastTarget = false;
-            var label = Text(back, "Label", font, "GO BACK", 44f, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(300f, 120f), TextAlignmentOptions.Center, Color.white);
-            label.fontStyle = FontStyles.Bold;
+            Text(back, "Label", font, "GO BACK", 44f, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(300f, 120f), TextAlignmentOptions.Center, Color.white);
 
-            Text(canvas, "Hint", font, "DRAG TO ROTATE    1 / 2  SWITCH VIEW", 26f, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-60f, 50f),
+            Text(canvas, "Hint", font, "DRAG TO ROTATE    1 / 2  SWITCH VIEW    P  SHOWCASE", 26f, new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(-60f, 50f),
                 new Vector2(800f, 40f), TextAlignmentOptions.MidlineRight, new Color(1f, 1f, 1f, 0.55f));
         }
 
@@ -537,14 +536,6 @@ namespace VertigoDemo.WeaponVFX.EditorTools
             var turntable = Object.FindFirstObjectByType<InspectTurntable>().transform;
             foreach (var system in Object.FindObjectsByType<ParticleSystem>(FindObjectsSortMode.None))
                 system.Simulate(2f, false, true);
-
-            foreach (var ribbons in Object.FindObjectsByType<WindRibbonMesh>(FindObjectsSortMode.None))
-            {
-                var mesh = ribbons.GetComponent<MeshFilter>().sharedMesh;
-                var renderer = ribbons.GetComponent<MeshRenderer>();
-                Debug.Log($"[WeaponVfxBuilder] Ribbons: mesh {(mesh != null ? $"{mesh.vertexCount} verts, bounds {mesh.bounds}" : "missing")}, " +
-                          $"material {renderer.sharedMaterial?.name}, enabled {renderer.enabled}, active {ribbons.isActiveAndEnabled}");
-            }
 
             Capture(camera, "weapon_side.png");
             turntable.localRotation = Quaternion.AngleAxis(-34f, Vector3.up) * Quaternion.AngleAxis(6f, Vector3.forward);
