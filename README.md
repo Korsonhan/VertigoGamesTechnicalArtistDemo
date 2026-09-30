@@ -11,11 +11,13 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
 1. Install Unity **6000.3.9f1** through Unity Hub.
 2. Clone this repository, then in Unity Hub choose **Add → Add project from disk** and select the cloned folder.
-3. Open a scene from the table above, set the Game view to a landscape phone resolution (for example **2340 × 1080**) and press **Play**.
+3. Open a scene from the table above, set the Game view to a landscape phone resolution (for example **2340 × 1080**) and press **Play**. To fill the whole editor window, pick **Play Maximized** in the Game view's **Play Focused** menu first.
 
 ## Task 1 – Battle Pass Road
 
 ### What to test
+
+The placeholder player starts at level 3 with 80/200 XP and no pass, and the level 1 free reward is already claimed, so every state is on screen.
 
 - The screen opens where the road starts, as in the reference: the rewards that come with the pass itself, the pass ticket on the track and a free chest under it. It then glides to the player's progress.
 - Drag the road, or use the mouse wheel, to scroll through the 30 levels. While the progress is out of view, a tag at the edge of the road points at it with the level being worked on; tap it to scroll back.
@@ -42,11 +44,12 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 - **One UI material for the whole road.** `UIFx.shader` reads per-element parameters (state grading, flash, idle intensity, phase and effect flags) from UV1/UV2, written by `UIFxMeshEffect`, so every element can still batch. The idle loops (shine, pulse, bob, the season card's gold statue cycle) run on `_Time`: an idle screen costs no CPU and never rebuilds a canvas. Premultiplied alpha lets additive glows share the batch with alpha-blended cards.
 - **Sprite atlases.** Two atlases, one for UI chrome and one for reward renders, took the idle screen from 83 to 29 draw calls. Tiled, rotated and particle textures stay unpacked.
 - **The start of the road.** The season data has a level 0 for what the pass itself grants, which can hold several rewards per track. The road lays these out before level 1, with the pass ticket as their track marker.
+- **Reward data.** Level 0 and levels 1–10 follow the reference video. Where the reference shows a render that was not provided, the closest provided one stands in: the uncommon chest for the common chest, the Solaris magazine for the Spine attachment. The rest of the season is placeholder data built from the provided renders.
 - **Overdraw.** The background is the camera clear colour plus a single tiled pattern layer. Invisible hit areas use a raycast-only graphic that submits no geometry.
 - **Particles.** Claim and unlock bursts are pooled, so claiming never instantiates anything. They use a minimal additive URP shader and existing small textures. The flying currency icons live on a nested canvas, so they don't rebuild the road's batches while they move.
 - **Textures.** UI sprites have no mipmaps. The UI atlas uses ASTC 4×4 and the reward atlas ASTC 6×6. Soft glows use ASTC 8×8 capped at 512 px.
 - **Layout.** 1920 × 1080 reference resolution matched on height, so wider phones see more of the road. Interactive content sits inside the device safe area. The mobile URP asset renders at full resolution: the canvas is drawn by the camera, so a lower render scale would blur the UI.
-- **Tests.** `BattlePassProgress` holds the rules in plain C# with EditMode tests. A PlayMode test plays the whole flow, checks states and wallet, and logs the idle rendering cost. Run them from **Window → General → Test Runner**.
+- **Tests.** `BattlePassProgress` holds the rules in plain C# with EditMode tests. PlayMode tests play the whole flow (the chest at the start of the road, claiming, buying the pass and a level, the jump tag), check states and wallet, and log the idle rendering cost. Run them from **Window → General → Test Runner**.
 - **Tooling.** `BattlePass/Editor/BattlePassBuilder.cs` (**Tools → Vertigo Demo → Rebuild Battle Pass**) regenerates the Battle Pass materials, data, atlases, prefabs and scene hierarchy from code.
 
 ## Task 2 – Weapon VFX
@@ -59,7 +62,7 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
 
 ### How it is built
 
-- **Wind ribbons (shader).** `WindRibbonMesh` generates six ribbons that leave the muzzle and sweep back along the front and underside of the rifle, like the reference, plus four wisps: two leaving the muzzle and two trailing off the top of the stock. Each follows a smooth path through a few control points and rolls from a sheet into a thin line as it goes. They are built as a single mesh: one draw call and about 1,000 vertices, editable in the Inspector. `WindRibbon.shader` (hand-written HLSL, additive) does the following:
+- **Wind ribbons (shader).** `WindRibbonMesh` generates six ribbons that leave the muzzle and sweep back along the front and underside of the rifle, like the reference, plus four wisps: two leaving the muzzle and two trailing off the top of the stock. Each follows a smooth path through a few control points; the ribbons roll from a sheet into a thin line as they go, while the wisps stay face-on. They are built as a single mesh: one draw call and about 1,000 vertices, editable in the Inspector. `WindRibbon.shader` (hand-written HLSL, additive) does the following:
   - draws a thin bright line along one edge of each ribbon, with a soft translucent sheet trailing off the other side;
   - breaks each wisp into a few soft strands made of tapered pieces that drift at their own pace, for the fragmented, translucent wind of the reference;
   - moves light along the ribbon by scrolling the provided streak sprite in two layers at different speeds;
@@ -69,7 +72,7 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
   Seed, speed, brightness and the wisp flag for each ribbon travel in vertex colours, so one material covers all of them.
 - **Weapon shader.** The rifle comes with a diffuse map only, so `WeaponLegendary.shader` derives the other layers:
   - warm, saturated texels are read as polished gold, with tinted, tighter specular and a fake sky reflection;
-  - the pale ball inside the football cage glows and pulses, masked by an object-space sphere that skips the gold bars;
+  - the pale ball inside the football cage glows a saturated yellow and pulses, masked by an object-space sphere that skips the gold bars;
   - a sheen band sweeps the gold from muzzle to stock, following the wind.
 
   Lighting is the main light plus per-vertex SH, with no shadows.
@@ -79,7 +82,7 @@ Technical Artist demo for Vertigo Games, built with **Unity 6000.3.9f1 (Unity 6.
   - A soft halo over the core.
 
   All of them simulate in local space, are capped at 4–22 particles each and share one additive URP shader.
-- **Scene.** The backdrop is a full-screen radial gradient drawn by a clip-space quad, with no texture and dithered against banding. Post-processing runs inside the project: bloom at quarter resolution with 5 iterations, neutral tonemapping and a vignette.
+- **Scene.** The backdrop is a full-screen radial gradient drawn by a clip-space quad, with no texture and dithered against banding. Post-processing runs inside the project: bloom at quarter resolution with 5 iterations, neutral tonemapping, a vignette and a touch of contrast and saturation.
 - **Cost.** 27 draw calls (most of them the bloom chain), about 5,900 triangles and about 21 live particles.
 - **Tooling.** `WeaponVFX/Editor/WeaponVfxBuilder.cs` (**Tools → Vertigo Demo → Rebuild Weapon VFX**) regenerates the materials, post-processing profile, weapon prefab and scene. A PlayMode test checks that every effect is alive and logs the rendering cost.
 
@@ -94,7 +97,7 @@ Assets/Settings/        URP pipeline assets
 Assets/TextMesh Pro/    TextMesh Pro essential resources
 ```
 
-Import settings are applied automatically by `Shared/Editor/AssetImportRules.cs` the first time an asset is imported: UI sprites get no mipmaps, 9-slice borders and ASTC compression on mobile (lower bit rate and max 512 px for soft glows); the weapon FBX skips cameras, lights, animation, materials and tangents.
+Import settings are applied automatically by `Shared/Editor/AssetImportRules.cs` the first time an asset is imported: UI sprites get no mipmaps, 9-slice borders and ASTC compression on mobile (lower bit rate and max 512 px for soft glows); the weapon FBX skips cameras, lights, animation, materials and tangents, and its texture keeps mipmaps with ASTC 6×6 capped at 512 px.
 
 ## Asset ownership
 
